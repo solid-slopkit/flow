@@ -40,6 +40,8 @@ export default defineConfig({
             enabled: true,
             provider: playwright(),
             headless: true,
+            // Room for a whole test Flow: real input only reaches what is on screen.
+            viewport: { width: 1280, height: 800 },
             instances: [{ browser: 'chromium' }],
           },
         },

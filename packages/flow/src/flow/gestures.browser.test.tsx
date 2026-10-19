@@ -2,9 +2,9 @@
 // Pointer Events behave as in a page.
 import { captureArtifact } from '@solidjs/diagnostics';
 import { flush } from 'solid-js';
-import { cdp } from 'vitest/browser';
 import { describe, expect, test } from 'vitest';
 
+import { drag, mouse, settle, touches, wheel } from '../../test/input';
 import { render } from '../../test/render';
 import type { FlowState } from '../model/model';
 import type { Viewport } from '../viewport/viewport';
@@ -17,8 +17,6 @@ const state: FlowState = {
   ],
   edges: [],
 };
-
-const settle = () => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve)));
 
 async function renderFlow(props: Partial<FlowProps> = {}) {
   let api!: FlowApi;
@@ -39,29 +37,6 @@ async function renderFlow(props: Partial<FlowProps> = {}) {
   const at = (x: number, y: number) => ({ x: rect.left + x, y: rect.top + y });
   return { api: () => api, root, at };
 }
-
-const session = () => cdp();
-const mouse = (type: 'mousePressed' | 'mouseMoved' | 'mouseReleased', point: { x: number; y: number }, extra: object = {}) =>
-  session().send('Input.dispatchMouseEvent', {
-    type,
-    ...point,
-    button: 'left',
-    buttons: type === 'mouseReleased' ? 0 : 1,
-    clickCount: 1,
-    ...extra,
-  });
-async function drag(from: { x: number; y: number }, ...through: { x: number; y: number }[]) {
-  await mouse('mousePressed', from);
-  for (const point of through) await mouse('mouseMoved', point);
-  await mouse('mouseReleased', through.at(-1) ?? from);
-  await settle();
-}
-const wheel = async (point: { x: number; y: number }, deltaY: number, deltaX = 0, modifiers = 0) => {
-  await session().send('Input.dispatchMouseEvent', { type: 'mouseWheel', ...point, deltaX, deltaY, modifiers });
-  await settle();
-};
-const touches = (type: 'touchStart' | 'touchMove' | 'touchEnd', points: { x: number; y: number }[]) =>
-  session().send('Input.dispatchTouchEvent', { type, touchPoints: points.map((point, i) => ({ ...point, id: i + 1 })) });
 
 describe('panning', () => {
   test('dragging empty space pans, following the pointer outside the Flow', async () => {

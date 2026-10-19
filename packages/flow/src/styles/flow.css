@@ -62,4 +62,105 @@
   .slp-flow-labels {
     pointer-events: none;
   }
+
+  /* A Node is positioned by transform from its top-left corner; its content sets its size unless it has a Declared one. */
+  .slp-flow-node {
+    position: absolute;
+    inset: 0 auto auto 0;
+    box-sizing: border-box;
+
+    &[data-draggable] {
+      cursor: grab;
+    }
+
+    &[data-dragging] {
+      cursor: grabbing;
+    }
+
+    &[data-selected] {
+      outline: 2px solid var(--_flow-selection-color);
+      outline-offset: 2px;
+    }
+
+    &[data-drop-target] {
+      outline: 2px dashed var(--_flow-selection-color);
+      outline-offset: 4px;
+    }
+  }
+
+  .slp-flow-resizer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .slp-flow-resizer-handle {
+    --_flow-handle-size: 8px;
+
+    position: absolute;
+    width: var(--_flow-handle-size);
+    height: var(--_flow-handle-size);
+    translate: -50% -50%;
+    box-sizing: border-box;
+    border: 1px solid var(--_flow-selection-color);
+    border-radius: 2px;
+    background: var(--_flow-background);
+    pointer-events: auto;
+    touch-action: none;
+
+    &[data-handle^='top'] {
+      top: 0;
+    }
+    &[data-handle^='bottom'] {
+      top: 100%;
+    }
+    &[data-handle='left'],
+    &[data-handle='right'] {
+      top: 50%;
+    }
+    &[data-handle$='left'] {
+      left: 0;
+    }
+    &[data-handle$='right'] {
+      left: 100%;
+    }
+    &[data-handle='top'],
+    &[data-handle='bottom'] {
+      left: 50%;
+    }
+
+    &[data-handle='top-left'],
+    &[data-handle='bottom-right'] {
+      cursor: nwse-resize;
+    }
+    &[data-handle='top-right'],
+    &[data-handle='bottom-left'] {
+      cursor: nesw-resize;
+    }
+    &[data-handle='top'],
+    &[data-handle='bottom'] {
+      cursor: ns-resize;
+    }
+    &[data-handle='left'],
+    &[data-handle='right'] {
+      cursor: ew-resize;
+    }
+  }
+
+  /* Alignment guides while dragging, above the Nodes. */
+  .slp-flow-guides {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 1px;
+    height: 1px;
+    overflow: visible;
+    pointer-events: none;
+
+    & line {
+      stroke: var(--_flow-selection-color);
+      stroke-width: 1px;
+      stroke-dasharray: 4 3;
+      vector-effect: non-scaling-stroke;
+    }
+  }
 }

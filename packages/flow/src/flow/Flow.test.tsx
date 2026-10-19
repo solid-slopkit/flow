@@ -38,13 +38,14 @@ function renderFlow(props: Partial<Parameters<typeof Flow>[0]> = {}) {
 }
 
 describe('<Flow>', () => {
-  test('renders the Node layer between the SVG Edge layer and the label layer, all under one transform', () => {
+  test('renders the Node layer between the SVG Edge layer and the label layer, then the guides, under one transform', () => {
     const { root, layer } = renderFlow({ children: <p>content</p> });
     const viewport = layer('viewport');
     expect([...viewport.children].map((child) => child.getAttribute('class'))).toEqual([
       'slp-flow-edges',
       'slp-flow-nodes',
       'slp-flow-labels',
+      'slp-flow-guides',
     ]);
     expect(layer('edges').tagName).toBe('svg');
     expect(layer('nodes')).toHaveTextContent('content');

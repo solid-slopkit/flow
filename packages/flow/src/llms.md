@@ -38,6 +38,7 @@ export function Root() {
 The data model, Changes and History are plain TypeScript and work without a DOM.
 
 - Surface: `Flow`, `useFlow`, `Viewport`.
+- Nodes: `Node`, `useNode`, `NodeResizer`, `MeasuredPort`.
 - Records: `FlowState`, `FlowNode`, `FlowEdge`, `End`, `PortSpec`, `Side`, `PortKind`, `EdgeShapeName`, `Point`, `Size`, `Rect`; `indexFlow` for lookups by id.
 - Geometry: `absolutePosition`, `nodeBounds`, `portPoint`, `floatingPoint`, `edgeEnds`.
 - Edits: `Batch`, `Change` and its kinds, `invert`, `applyChanges`, `removal`.
@@ -46,6 +47,7 @@ The data model, Changes and History are plain TypeScript and work without a DOM.
 ## References
 
 - [Flow and Viewport](flow/flow.md): `<Flow>` and its props, pan and zoom gestures, `useFlow`, `fitView`, server rendering.
+- [Nodes](node/node.md): `<Node>`, measuring, dragging, nesting, snapping, alignment guides, `<NodeResizer>`.
 - [Data model](model/model.md): `FlowState` and its records, `indexFlow`.
 - [Geometry](geometry/geometry.md): absolute positions, Node bounds, Port points, Floating ends.
 - [Changes and Batches](changes/changes.md): every Change, phases, `invert`, `applyChanges`, `removal`.

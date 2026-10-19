@@ -42,13 +42,13 @@ Pure TypeScript, no components yet. Everything here works without a DOM.
 
 ## F3 — Nodes
 
-- [ ] **F3.01** `<Node>`: positioned from the state, absolute through its Parent, z-order following nesting; renders the app's JSX.
-- [ ] **F3.02** Measuring with `ResizeObserver` into library state keyed by Node id (ADR 0015); Ports measured relative to their Node.
-- [ ] **F3.03** Dragging: threshold, `move` Batches with phases, dragging every selected Node together, `draggable`, the drag handle selector and `data-flow-nodrag`.
-- [ ] **F3.04** Dragging nested Nodes: moving with the Parent, keeping a child inside its Parent when asked, `reparent` by dropping onto a Node.
-- [ ] **F3.05** Snap to grid while dragging.
-- [ ] **F3.06** Resizing: `<NodeResizer>` built from components, `resize` Batches with phases, min / max size, keeping aspect ratio.
-- [ ] **F3.07** Alignment guides while dragging: lines to other Nodes' edges and centres, with snapping to them.
+- [x] **F3.01** `<Node>`: positioned from the state, absolute through its Parent, z-order following nesting; renders the app's JSX.
+- [x] **F3.02** Measuring with `ResizeObserver` into library state keyed by Node id (ADR 0015); Ports measured relative to their Node.
+- [x] **F3.03** Dragging: threshold, `move` Batches with phases, dragging every selected Node together, `draggable`, the drag handle selector and `data-flow-nodrag`.
+- [x] **F3.04** Dragging nested Nodes: moving with the Parent, keeping a child inside its Parent when asked, `reparent` by dropping onto a Node.
+- [x] **F3.05** Snap to grid while dragging.
+- [x] **F3.06** Resizing: `<NodeResizer>` built from components, `resize` Batches with phases, min / max size, keeping aspect ratio.
+- [x] **F3.07** Alignment guides while dragging: lines to other Nodes' edges and centres, with snapping to them.
 
 ## F4 — Ports and Edges
 

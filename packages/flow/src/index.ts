@@ -44,3 +44,6 @@ export { applyChanges, removal } from './changes/apply';
 export { createHistory, type History, type HistoryOptions } from './history/history';
 export { Flow, useFlow, type FitViewOptions, type FlowApi, type FlowProps } from './flow/Flow';
 export type { FitOptions, Viewport, ZoomLimits } from './viewport/viewport';
+export type { MeasuredPort } from './flow/internals';
+export { Node, useNode, type NodeApi, type NodeProps } from './node/Node';
+export { NodeResizer, type NodeResizerProps } from './node/NodeResizer';

@@ -1,10 +1,10 @@
-import { createContext, createMemo, createSignal, onSettled, untrack, useContext } from 'solid-js';
+import { createContext, createMemo, createSignal, createStore, For, onSettled, untrack, useContext } from 'solid-js';
 import type { JSX } from '@solidjs/web';
 
 import type { Batch } from '../changes/changes';
 import { nodeBounds } from '../geometry/geometry';
 import { indexFlow, type FlowIndex } from '../model/flow-index';
-import type { FlowState, Point, Rect, Size } from '../model/model';
+import type { FlowNode, FlowState, Point, Rect, Size } from '../model/model';
 import {
   clampZoom,
   toFlow,
@@ -17,6 +17,7 @@ import {
   type ZoomLimits,
 } from '../viewport/viewport';
 import { attachGestures } from './gestures';
+import { FlowInternalsContext, type FlowInternals, type Guide, type MeasuredPort, type NodeOptions } from './internals';
 
 export type FitViewOptions = FitOptions & {
   /** Fit these Nodes only. Defaults to every Node with a size. */
@@ -45,6 +46,18 @@ export interface FlowProps<N = unknown, E = unknown> {
   scrollPans?: boolean;
   /** Start fitted to the Nodes. With `width` and `height` this is computed while rendering, so on the server too. */
   fitView?: boolean | FitViewOptions;
+  /** Dragged Nodes snap to a grid with this spacing in Flow coordinates: one number, or `[x, y]`. */
+  snapToGrid?: number | readonly [number, number];
+  /**
+   * While dragging, show lines where a Node's edges or centre line up with another Node's, and snap to them.
+   * `threshold` is how close, in screen pixels, snaps (default 6).
+   */
+  alignmentGuides?: boolean | { threshold?: number };
+  /**
+   * Dropping dragged Nodes onto another Node nests them in it, and dropping them on empty space makes them top-level.
+   * A function decides per Node and Parent (`undefined` for top level). Off by default.
+   */
+  reparentOnDrop?: boolean | ((node: FlowNode<N>, parent: FlowNode<N> | undefined) => boolean);
   /** The Flow's declared width in pixels, used until it is measured, and on the server. */
   width?: number;
   /** The Flow's declared height in pixels. */
@@ -80,6 +93,10 @@ export interface FlowApi<N = unknown, E = unknown> {
   /** The Flow's size: measured in the page, else declared. */
   size(): Size;
   zoomLimits(): ZoomLimits;
+  /** A Node's Measured size, while it is rendered and measured (ADR 0015). Reactive. */
+  measuredSize(id: string): Size | undefined;
+  /** A Port's measured centre, relative to its Node's top-left corner, and its side. Reactive. */
+  measuredPort(node: string, port: string): MeasuredPort | undefined;
 }
 
 const FlowContext = createContext<FlowApi<any, any>>(undefined, { name: 'Flow' });
@@ -92,6 +109,15 @@ export function useFlow<N = unknown, E = unknown>(): FlowApi<N, E> {
 const ZOOM_STEP = 1.2;
 const sameViewport = (a: Viewport, b: Viewport) => a.x === b.x && a.y === b.y && a.zoom === b.zoom;
 const sameSize = (a: Size | undefined, b: Size | undefined) => a?.width === b?.width && a?.height === b?.height;
+const samePorts = (a: Record<string, MeasuredPort> | undefined, b: Record<string, MeasuredPort> | undefined) => {
+  if (!a || !b) return a === b;
+  const keys = Object.keys(a);
+  return (
+    keys.length === Object.keys(b).length &&
+    keys.every((key) => b[key] && a[key]!.x === b[key].x && a[key]!.y === b[key].y && a[key]!.side === b[key].side)
+  );
+};
+const GUIDE_THRESHOLD = 6;
 
 /**
  * The editor surface: the app's Nodes and Edges drawn in one Viewport. Its children are the app's own JSX, rendered in
@@ -106,17 +132,92 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
   const size = (): Size => (measured(), latestSize ?? { width: props.width ?? 0, height: props.height ?? 0 });
   const fitOptions = (): FitViewOptions | undefined => (props.fitView === true ? {} : props.fitView || undefined);
 
+  // Measured sizes and Ports are library state keyed by Node id (ADR 0015): one key per Node, so measuring one Node
+  // re-runs only what reads that Node.
+  const [sizes, setSizes] = createStore<Record<string, Size>>({});
+  const [ports, setPorts] = createStore<Record<string, Record<string, MeasuredPort>>>({});
+  // Read through the store for tracking, answered from here so a size is current right after it is measured.
+  const latestSizes = new Map<string, Size>();
+  const measuredSize = (id: string) => (sizes[id], latestSizes.get(id));
+
   const boundsOf = (ids?: string[]) =>
     unionBounds(
       (ids ?? props.state.nodes.map((node) => node.id))
-        .map((id) => nodeBounds(index(), id))
+        .map((id) => nodeBounds(index(), id, measuredSize))
         .filter((bounds): bounds is Rect => bounds !== undefined),
     );
 
+  const zOrder = createMemo(
+    () => {
+      const order = new Map<string, number>();
+      const visit = (node: FlowNode<N>) => {
+        if (order.has(node.id)) return;
+        order.set(node.id, order.size);
+        for (const child of index().childrenOf(node.id)) visit(child);
+      };
+      for (const node of props.state.nodes) if (node.parent === undefined || !index().node(node.parent)) visit(node);
+      // Nodes on a cycle of Parents have no top: draw them after the rest.
+      for (const node of props.state.nodes) visit(node);
+      return order;
+    },
+    { name: 'zOrder' },
+  );
+  const [dragging, setDragging] = createSignal<ReadonlySet<string>>(new Set(), { name: 'dragging' });
+  const [dropTarget, setDropTarget] = createSignal<string | undefined>(undefined, { name: 'dropTarget' });
+  const [guides, setGuides] = createSignal<readonly Guide[]>([], {
+    name: 'guides',
+    equals: (a, b) =>
+      a.length === b.length &&
+      a.every((guide, i) => (Object.keys(guide) as (keyof Guide)[]).every((key) => guide[key] === b[i]![key])),
+  });
+  const internals: FlowInternals = {
+    measuredSize,
+    setMeasuredSize: (id, size) => {
+      if (sameSize(latestSizes.get(id), size)) return;
+      if (size) latestSizes.set(id, { ...size });
+      else latestSizes.delete(id);
+      setSizes((draft) => {
+        if (!size) delete draft[id];
+        else if (draft[id]) Object.assign(draft[id], size);
+        else draft[id] = { ...size };
+      });
+      tryPendingFit();
+    },
+    measuredPorts: (id) => ports[id],
+    setMeasuredPorts: (id, measured) =>
+      setPorts((draft) => {
+        if (samePorts(draft[id], measured)) return;
+        if (!measured) delete draft[id];
+        else draft[id] = measured;
+      }),
+    zOrder: (id) => zOrder().get(id) ?? 0,
+    nodeOptions: new Map<string, NodeOptions>(),
+    dragging: (id) => dragging().has(id),
+    setDragging,
+    dropTarget,
+    setDropTarget,
+    guides,
+    setGuides,
+    snapToGrid: () => {
+      const grid = props.snapToGrid;
+      return grid === undefined ? undefined : typeof grid === 'number' ? [grid, grid] : grid;
+    },
+    guideThreshold: () =>
+      props.alignmentGuides
+        ? ((props.alignmentGuides === true ? undefined : props.alignmentGuides.threshold) ?? GUIDE_THRESHOLD)
+        : undefined,
+    reparentRule: () => {
+      const rule = props.reparentOnDrop;
+      return rule === true ? () => true : rule || undefined;
+    },
+  };
+
   // Fitting from the declared size happens here, while rendering, so the server sends the fitted Viewport.
+  let fittedWhileRendering = false;
   const initial = untrack((): Viewport => {
     const fit = fitOptions();
     const bounds = fit && props.width && props.height ? boundsOf(fit.nodes) : undefined;
+    fittedWhileRendering = bounds !== undefined;
     if (fit && bounds) return viewportForBounds(bounds, { width: props.width!, height: props.height! }, zoomLimits(), fit);
     const start = props.defaultViewport ?? { x: 0, y: 0, zoom: 1 };
     return { ...start, zoom: clampZoom(start.zoom, zoomLimits()) };
@@ -127,7 +228,22 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
   const viewport = () => props.viewport ?? (own(), latest);
   const current = () => props.viewport ?? latest;
 
+  // Otherwise the first fit waits for sizes: it is redone as the Flow and its Nodes are measured, until every Node has a
+  // size, unless the Viewport is moved first.
+  let pendingFit = fittedWhileRendering ? undefined : untrack(fitOptions, false);
+  let fitting = false;
+  const tryPendingFit = () => {
+    if (!pendingFit || !latestSize) return;
+    const fit = pendingFit;
+    const bounds = boundsOf(fit.nodes);
+    fitting = true;
+    if (bounds) fitBounds(bounds, fit);
+    fitting = false;
+    if (untrack(() => props.state.nodes.every((node) => measuredSize(node.id) ?? node.size), false)) pendingFit = undefined;
+  };
+
   const setViewport = (next: Viewport) => {
+    if (!fitting) pendingFit = undefined;
     const clamped = { ...next, zoom: clampZoom(next.zoom, zoomLimits()) };
     if (sameViewport(clamped, current())) return;
     latest = clamped;
@@ -174,21 +290,18 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
     },
     size,
     zoomLimits,
+    measuredSize,
+    measuredPort: (node, port) => ports[node]?.[port],
   };
 
   onSettled(() => {
     const element = root!;
-    // Without a declared size there was nothing to fit while rendering: fit once the Flow is first measured.
-    let initialFit = props.width && props.height ? undefined : fitOptions();
     // A Flow with no area (not laid out yet, or hidden) keeps its declared size.
     const measure = () => {
       const { clientWidth: width, clientHeight: height } = element;
       latestSize = width || height ? { width, height } : undefined;
       setMeasured(latestSize);
-      if (latestSize && initialFit) {
-        api.fitView(initialFit);
-        initialFit = undefined;
-      }
+      tryPendingFit();
     };
     measure();
     const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure);
@@ -212,24 +325,29 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
 
   return (
     <FlowContext value={api}>
-      <div
-        ref={(element) => (root = element)}
-        class={props.class ? `slp-flow ${props.class}` : 'slp-flow'}
-        style={{
-          width: props.width === undefined ? undefined : `${props.width}px`,
-          height: props.height === undefined ? undefined : `${props.height}px`,
-          ...props.style,
-        }}
-        data-flow-pane
-      >
-        <div class="slp-flow-viewport" style={{ transform: transform() }} data-flow-pane>
-          <svg class="slp-flow-edges" data-flow-pane />
-          <div class="slp-flow-nodes" data-flow-pane>
-            {props.children}
+      <FlowInternalsContext value={internals}>
+        <div
+          ref={(element) => (root = element)}
+          class={props.class ? `slp-flow ${props.class}` : 'slp-flow'}
+          style={{
+            width: props.width === undefined ? undefined : `${props.width}px`,
+            height: props.height === undefined ? undefined : `${props.height}px`,
+            ...props.style,
+          }}
+          data-flow-pane
+        >
+          <div class="slp-flow-viewport" style={{ transform: transform() }} data-flow-pane>
+            <svg class="slp-flow-edges" data-flow-pane />
+            <div class="slp-flow-nodes" data-flow-pane>
+              {props.children}
+            </div>
+            <div class="slp-flow-labels" data-flow-pane />
+            <svg class="slp-flow-guides" data-flow-pane>
+              <For each={guides()}>{(guide) => <line x1={guide.x1} y1={guide.y1} x2={guide.x2} y2={guide.y2} />}</For>
+            </svg>
           </div>
-          <div class="slp-flow-labels" data-flow-pane />
         </div>
-      </div>
+      </FlowInternalsContext>
     </FlowContext>
   );
 }
