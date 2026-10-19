@@ -3,7 +3,18 @@ import { describe, expect, test } from 'vitest';
 import * as flow from './index';
 
 // The public runtime surface, pinned: adding or removing an export is a deliberate change.
-const PUBLIC_API: string[] = [];
+const PUBLIC_API: string[] = [
+  'absolutePosition',
+  'applyChanges',
+  'createHistory',
+  'edgeEnds',
+  'floatingPoint',
+  'indexFlow',
+  'invert',
+  'nodeBounds',
+  'portPoint',
+  'removal',
+];
 
 describe('public API', () => {
   test('exports exactly the pinned names', () => {

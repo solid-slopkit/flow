@@ -27,11 +27,11 @@
 
 Pure TypeScript, no components yet. Everything here works without a DOM.
 
-- [ ] **F1.01** Record types (ADR 0014, 0017, 0018): `FlowNode<D>`, `FlowEdge<D>`, `FlowState`, `End`, `PortSpec` (id, side, offset, kind, `max`), Edge shape names. An id index over a `FlowState` (Node and Edge by id, Edges by Node, children by Parent).
-- [ ] **F1.02** Geometry: absolute positions through Parents, Node bounds from Measured-else-Declared size, Port points from declared Ports, Floating end points clipped to a Node's outline (ADR 0015, 0017, 0019).
-- [ ] **F1.03** `Change` and `Batch` types for every edit (`add`, `remove`, `move`, `select`, `resize`, `connect`, `reconnect`, `reparent`, `update`), each carrying what it replaces, and phases. `invert(batch)`.
-- [ ] **F1.04** `applyChanges(store, batch)`: one store write per Batch; removing a Node removes its Edges and its children.
-- [ ] **F1.05** `createHistory()`: records Batches at `end`, merges a drag into one entry, skips Selection unless asked, `undo` / `redo` / `canUndo` / `canRedo` returning Batches.
+- [x] **F1.01** Record types (ADR 0014, 0017, 0018): `FlowNode<D>`, `FlowEdge<D>`, `FlowState`, `End`, `PortSpec` (id, side, offset, kind, `max`), Edge shape names. An id index over a `FlowState` (Node and Edge by id, Edges by Node, children by Parent).
+- [x] **F1.02** Geometry: absolute positions through Parents, Node bounds from Measured-else-Declared size, Port points from declared Ports, Floating end points clipped to a Node's outline (ADR 0015, 0017, 0019).
+- [x] **F1.03** `Change` and `Batch` types for every edit (`add`, `remove`, `move`, `select`, `resize`, `connect`, `reconnect`, `reparent`, `update`), each carrying what it replaces, and phases. `invert(batch)`.
+- [x] **F1.04** `applyChanges(store, batch)`: one store write per Batch; removing a Node removes its Edges and its children.
+- [x] **F1.05** `createHistory()`: records Batches at `end`, merges a drag into one entry, skips Selection unless asked, `undo` / `redo` / `canUndo` / `canRedo` returning Batches.
 
 ## F2 — Flow and Viewport
 

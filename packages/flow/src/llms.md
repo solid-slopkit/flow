@@ -35,8 +35,16 @@ export function Root() {
 
 ## API
 
-Nothing is exported yet.
+The data model, Changes and History are plain TypeScript and work without a DOM. No components are exported yet.
+
+- Records: `FlowState`, `FlowNode`, `FlowEdge`, `End`, `PortSpec`, `Side`, `PortKind`, `EdgeShapeName`, `Point`, `Size`, `Rect`; `indexFlow` for lookups by id.
+- Geometry: `absolutePosition`, `nodeBounds`, `portPoint`, `floatingPoint`, `edgeEnds`.
+- Edits: `Batch`, `Change` and its kinds, `invert`, `applyChanges`, `removal`.
+- Undo: `createHistory`.
 
 ## References
 
-None yet. Each area gets a reference next to its source (`<area>/<area>.md`), linked here.
+- [Data model](model/model.md): `FlowState` and its records, `indexFlow`.
+- [Geometry](geometry/geometry.md): absolute positions, Node bounds, Port points, Floating ends.
+- [Changes and Batches](changes/changes.md): every Change, phases, `invert`, `applyChanges`, `removal`.
+- [History](history/history.md): `createHistory`, undo and redo over Batches.
