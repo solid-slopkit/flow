@@ -23,6 +23,8 @@ export interface EdgeProps {
   reconnectable?: boolean;
   /** HTML drawn at the Edge's label point, in the label layer above the Nodes. */
   label?: JSX.Element;
+  /** The Edge's name for assistive technology. Defaults to `messages.edgeLabel`, from its Nodes' names. */
+  'aria-label'?: string;
   class?: string;
   style?: JSX.CSSProperties;
   /** SVG drawn instead of the default `<EdgePath />`, for a custom Edge. Read the Edge through `useEdge()`. */
@@ -164,6 +166,16 @@ function EdgeDrawing(props: { edge: EdgeProps; markerId: string }): JSX.Element 
   const flow = useFlow();
   const placed = () => edge.geometry() !== undefined;
   const reconnectable = () => flow.interactive() && (props.edge.reconnectable ?? true);
+  const ariaLabel = () => {
+    if (props.edge['aria-label'] !== undefined) return props.edge['aria-label'];
+    const record = edge.edge();
+    return (
+      record &&
+      internals
+        .messages()
+        .edgeLabel({ source: internals.nodeName(record.source.node), target: internals.nodeName(record.target.node) })
+    );
+  };
   // Resolved here, so a label that is `undefined` or `false` (a condition in the app's JSX) draws no label box.
   const content = children(() => props.edge.label);
   const hasLabel = () => {
@@ -180,6 +192,10 @@ function EdgeDrawing(props: { edge: EdgeProps; markerId: string }): JSX.Element 
       <g
         class={props.edge.class ? `slp-flow-edge ${props.edge.class}` : 'slp-flow-edge'}
         data-flow-edge={props.edge.id}
+        tabindex={placed() ? '-1' : undefined}
+        role="group"
+        aria-roledescription={internals.messages().edge}
+        aria-label={ariaLabel()}
         data-selected={edge.selected() ? '' : undefined}
         data-reconnecting={internals.reconnecting(props.edge.id) ? '' : undefined}
         style={props.edge.style}

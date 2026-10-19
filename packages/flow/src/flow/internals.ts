@@ -3,6 +3,7 @@
 import { createContext, useContext } from 'solid-js';
 import type { JSX } from '@solidjs/web';
 
+import type { FlowMessages } from '../accessibility/messages';
 import type { Connection, ConnectEnd } from '../connection/connect';
 import type { ConnectionRule } from '../connection/rules';
 import type { ClipboardPayload } from '../clipboard/payload';
@@ -16,7 +17,7 @@ export type MeasuredPort = Point & { side: Side };
 export type Guide = { x1: number; y1: number; x2: number; y2: number };
 
 /** What a `<Node>` says about itself that isn't in the data. */
-export type NodeOptions = { keepInParent: boolean };
+export type NodeOptions = { keepInParent: boolean; label: string | undefined };
 
 /** A Port as the Flow knows it: a rendered `<Port>`'s props over its declared `PortSpec`. Its fields are reactive. */
 export type PortInfo = { side: Side | undefined; kind: PortKind; max: number | undefined };
@@ -34,6 +35,14 @@ export interface FlowInternals {
   /** Drawing order: a Node is drawn above its Parent, and a later top-level Node above an earlier one with all its children. */
   zOrder(id: string): number;
   nodeOptions: Map<string, NodeOptions>;
+  /** A Node's text content, its name unless it has an `aria-label`; `undefined` forgets it. */
+  setNodeText(id: string, text: string | undefined): void;
+  /** A Node's name for labels and announcements: its `aria-label`, else its text, else its id. Reactive. */
+  nodeName(id: string): string;
+  /** The Flow's labels and announcements, the app's over the defaults. */
+  messages(): FlowMessages;
+  /** Says this in the Flow's live region. */
+  announce(text: string): void;
   /** The rendered `<Port>`s, by Node id and then Port id. */
   portInfo: Map<string, Map<string, PortInfo>>;
   /** The rendered `<Edge>`s, in the order they were rendered. */

@@ -28,6 +28,7 @@ import { Edge, Flow, Node, Port } from '@solid-slopkit/flow';
 | `markerStart`, `markerEnd` | `EdgeMarker`                 | A marker at that end. None by default.                                          |
 | `reconnectable`            | `boolean`                    | Dragging an end moves it to another Port, or removes the Edge. Default `true`.  |
 | `label`                    | `JSX.Element`                | HTML centred on the Edge's label point, in the label layer.                     |
+| `aria-label`               | `string`                     | Its name for assistive technology; default `messages.edgeLabel`: `From A to B`. |
 | `class`, `style`           |                              | On the Edge's `<g class="slp-flow-edge">`.                                      |
 | `children`                 | `JSX.Element`                | SVG drawn instead of the default `<EdgePath />`: a custom Edge (see below).     |
 

@@ -24,9 +24,11 @@ import { Flow, Node, NodeResizer } from '@solid-slopkit/flow';
 | `id`             | `string`      | The record's id. Required; it doesn't change for the life of the Node. |
 | `dragHandle`     | `string`      | A selector: dragging starts only on matching elements inside the Node. |
 | `keepInParent`   | `boolean`     | Keep the Node inside its Parent while dragging.                        |
+| `aria-label`     | `string`      | Its name for assistive technology and announcements; default its text. |
 | `class`, `style` |               | On the Node element (`.slp-flow-node`).                                |
 | `children`       | `JSX.Element` | The content.                                                           |
 
+- It is a focusable `role="group"` named by its `aria-label`, else its text (see [accessibility](../accessibility/accessibility.md)).
 - It is drawn at its absolute position: its `position` plus its Parents'. A Node with a Declared `size` gets that width and height; otherwise its content sizes it.
 - Drawing order follows nesting: a Node above its Parent, and a later top-level Node above an earlier one together with all that one's children.
 - Attributes for styling: `data-selected`, `data-draggable` (it can be dragged now), `data-dragging`, `data-drop-target` (dragged Nodes would be nested in it on drop).

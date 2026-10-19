@@ -73,9 +73,9 @@ Pure TypeScript, no components yet. Everything here works without a DOM.
 
 ## F7 — Accessibility
 
-- [ ] **F7.01** Roving focus over Nodes and Edges in spatial order, `role="application"`, labels the app can override.
-- [ ] **F7.02** Connecting by keyboard: Enter on a Port, move to a target Port, Enter again; Escape cancels.
-- [ ] **F7.03** A live region announcing moves, Connections, removals and Selection, with messages the app can replace.
+- [x] **F7.01** Roving focus over Nodes and Edges in spatial order, `role="application"`, labels the app can override.
+- [x] **F7.02** Connecting by keyboard: Enter on a Port, move to a target Port, Enter again; Escape cancels.
+- [x] **F7.03** A live region announcing moves, Connections, removals and Selection, with messages the app can replace.
 
 ## F8 — Server rendering
 

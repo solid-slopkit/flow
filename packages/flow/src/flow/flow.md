@@ -39,6 +39,8 @@ The Flow has no size of its own: give it one with CSS, or with `width` and `heig
 | `transformCopy`    | `(payload) => payload \| undefined`     |                           | Changes what copy and cut write (see [clipboard](../clipboard/clipboard.md)).                                    |
 | `transformPaste`   | `(payload) => payload \| undefined`     |                           | Changes what a paste adds.                                                                                       |
 | `onDrop`           | `(drop: { data, position }) => void`    |                           | A `<FlowDraggable>` dropped on the Flow (see [palette](../palette/palette.md)).                                  |
+| `aria-label`       | `string`                                | `messages.flow`           | The Flow's accessible name (see [accessibility](../accessibility/accessibility.md)).                             |
+| `messages`         | `Partial<FlowMessages>`                 |                           | Replaces any label or announcement the Flow writes for assistive technology.                                     |
 | `width`, `height`  | `number`                                |                           | The Flow's declared size in pixels: set on the element, used until it is measured, and on the server.            |
 | `class`, `style`   |                                         |                           | On the Flow's root element (`.slp-flow`).                                                                        |
 | `children`         | `JSX.Element`                           |                           | Rendered in the Node layer; `<Edge>`s draw into the Edge and label layers (see [edges](../edge/edge.md)).        |
@@ -58,7 +60,7 @@ Built on Pointer Events with pointer capture, so mouse, pen and touch share one 
 - Dragging empty space (primary or middle mouse button, one finger) pans; Shift-dragging it draws the selection box instead. A drag that starts on content in the Flow doesn't. While panning, the root has `data-panning`.
 - The wheel zooms around the pointer; with `scrollPans` it pans and Ctrl + wheel zooms. A trackpad pinch arrives as Ctrl + wheel. The wheel never scrolls the page while over the Flow.
 - Two fingers pinch: zoom by their spread around their midpoint, and pan with the midpoint.
-- Clicks select, and a focused Flow takes the keyboard and the clipboard: the root has `tabindex="0"` (see [selection](../selection/selection.md) and [clipboard](../clipboard/clipboard.md)).
+- Clicks select, and a focused Flow takes the keyboard and the clipboard: the root has `tabindex="0"` and `role="application"`, and Tab moves focus over its Nodes, Ports and Edges (see [selection](../selection/selection.md), [accessibility](../accessibility/accessibility.md) and [clipboard](../clipboard/clipboard.md)).
 - Dragging from a Port, or from an Edge's end, is a Connection (see [connections](../connection/connection.md)). While it lasts, the root has `data-connecting`.
 
 ## `useFlow()`
@@ -68,7 +70,7 @@ Inside a Flow's children, returns that Flow's `FlowApi`. Each Flow has its own, 
 | Member                        | Description                                                                                                |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `state()`, `index()`          | The state, and a `FlowIndex` over it.                                                                      |
-| `emit(batch)`                 | Sends a Batch to `onChange`; dropped when not interactive.                                                 |
+| `emit(batch)`                 | Sends a Batch to `onChange`, and announces it in the live region; dropped when not interactive.            |
 | `createId()`, `interactive()` | From the props.                                                                                            |
 | `viewport()`                  | The current Viewport. Reactive.                                                                            |
 | `setViewport(viewport)`       | Clamps the zoom; sets it when uncontrolled, reports it through `onViewportChange` either way.              |

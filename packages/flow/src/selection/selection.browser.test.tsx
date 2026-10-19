@@ -100,10 +100,10 @@ describe('the selection box', () => {
 });
 
 describe('the keyboard', () => {
-  test('a click focuses the Flow; arrows move, Escape clears and Delete removes the Selection', async () => {
+  test('a click focuses the Node; arrows move, Escape clears and Delete removes the Selection', async () => {
     const { nodeElement, root, state: flow, selected } = await editor();
     await drag(pointOf(nodeElement('a')));
-    expect(document.activeElement).toBe(root());
+    expect(document.activeElement).toBe(nodeElement('a'));
     await key('ArrowRight');
     await key('ArrowDown', SHIFT);
     expect(flow.nodes[0]!.position).toEqual({ x: 1, y: 10 });
@@ -113,6 +113,7 @@ describe('the keyboard', () => {
     await key('Delete');
     expect(flow.nodes.map((record) => record.id)).toEqual(['b', 'c']);
     expect(flow.edges).toEqual([]);
+    expect(document.activeElement).toBe(root());
   });
 
   test('Escape cancels a Connection being dragged', async () => {

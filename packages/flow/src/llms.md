@@ -42,6 +42,7 @@ The data model, Changes and History are plain TypeScript and work without a DOM.
 - Ports: `Port`, `PortInfo`.
 - Connections: `Connection`, `ConnectEnd`, `ConnectionRule`; the Flow's `canConnect`, `connectionRadius` and `onConnectEnd`.
 - Selection and the keyboard: `SelectionMode`; the Flow's `selectionMode`.
+- Accessibility: `FlowMessages`; the Flow's `messages` and `aria-label`, and `aria-label` on `<Node>`, `<Port>` and `<Edge>`.
 - Clipboard: `ClipboardPayload`; the Flow's `transformCopy` and `transformPaste`.
 - Palette: `FlowDraggable`, `FlowDraggableProps`; the Flow's `onDrop`.
 - Edges: `Edge`, `useEdge`, `EdgePath`, `EdgeMarker`; shapes `bezierShape`, `straightShape`, `stepShape`, `smoothStepShape`, `edgeShapes`, `EdgeShape`, `EdgeGeometry`, `EdgeShapeContext`.
@@ -58,6 +59,7 @@ The data model, Changes and History are plain TypeScript and work without a DOM.
 - [Edges](edge/edge.md): `<Edge>`, Edge shapes, custom Edges with `useEdge`, markers, labels.
 - [Connections](connection/connection.md): dragging from a Port to make an Edge, where it may end, reconnecting, dropping on empty space.
 - [Selection and the keyboard](selection/selection.md): clicking, the selection box, arrow keys, Delete and Escape.
+- [Accessibility](accessibility/accessibility.md): roles and names, focus in spatial order, connecting from the keyboard, the live region, `messages`.
 - [Copy, cut and paste](clipboard/clipboard.md): the clipboard events, the payload, new ids, placement, transforms.
 - [Dragging from a palette](palette/palette.md): `<FlowDraggable>` and the Flow's `onDrop`.
 - [Data model](model/model.md): `FlowState` and its records, `indexFlow`.

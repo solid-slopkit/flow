@@ -144,8 +144,8 @@ describe('clicking', () => {
     expect(artifact).toHaveNoDiagnostics();
     expect(artifact).toStayWithinRerunBudget(0, { scope: /^(node|edge):/ });
     expect(artifact).toStayWithinRerunBudget(0, { scope: 'flowIndex' });
-    // The one Node's attributes.
-    expect(artifact).toStayWithinRerunBudget(1);
+    // The one Node's attributes, and the live region's text.
+    expect(artifact).toStayWithinRerunBudget(2);
   });
 });
 

@@ -23,7 +23,8 @@
     --_flow-selection-color: var(--slp-flow-selection-color, var(--slp-color-primary));
 
     position: relative;
-    overflow: hidden;
+    /* Clipped, not hidden: focusing a Node out of sight must not scroll the Flow's content, only pan the Viewport. */
+    overflow: clip;
     background: var(--_flow-background);
     color: var(--slp-color-base-content);
     /* Every gesture is the Flow's own (ADR 0022): no browser panning or pinch zooming. */
@@ -94,6 +95,17 @@
     &[data-selected] {
       color: var(--_flow-selection-color);
     }
+
+    /* Keyboard focus: a halo along the Edge, on its hit line in an interactive Flow, else a thicker line. */
+    &:focus {
+      outline: none;
+    }
+    &:focus-visible .slp-flow-edge-hit {
+      stroke: color-mix(in srgb, var(--_flow-selection-color) 35%, transparent);
+    }
+    &:focus-visible .slp-flow-edge-path {
+      stroke-width: 3;
+    }
   }
 
   /* Hidden while its end is dragged: the Connection line stands in for it. */
@@ -161,9 +173,23 @@
       cursor: grabbing;
     }
 
+    /* Keyboard focus: a lighter ring further out; with the Selection's, a thicker one. */
+    &:focus {
+      outline: none;
+    }
+    &:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--_flow-selection-color) 50%, transparent);
+      outline-offset: 4px;
+    }
+
     &[data-selected] {
       outline: 2px solid var(--_flow-selection-color);
       outline-offset: 2px;
+    }
+
+    &[data-selected]:focus-visible {
+      outline-width: 3px;
+      outline-offset: 4px;
     }
 
     &[data-drop-target] {
@@ -208,6 +234,14 @@
     &[data-connection-target] {
       background: var(--_flow-selection-color);
       scale: 1.5;
+    }
+
+    &:focus {
+      outline: none;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--_flow-selection-color);
+      outline-offset: 2px;
     }
   }
 

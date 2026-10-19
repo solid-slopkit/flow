@@ -14,6 +14,8 @@ export interface NodeProps {
   dragHandle?: string;
   /** Keep the Node inside its Parent while dragging. */
   keepInParent?: boolean;
+  /** The Node's name for assistive technology and announcements. Defaults to its text content. */
+  'aria-label'?: string;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;
@@ -72,6 +74,9 @@ export function Node(props: NodeProps): JSX.Element {
     get keepInParent() {
       return props.keepInParent ?? false;
     },
+    get label() {
+      return props['aria-label'];
+    },
   });
   onCleanup(() => internals.nodeOptions.delete(name));
 
@@ -99,6 +104,11 @@ export function Node(props: NodeProps): JSX.Element {
 
   onSettled(() => {
     const node = element!;
+    const readText = () => internals.setNodeText(name, node.textContent?.replace(/\s+/g, ' ').trim() || undefined);
+    readText();
+    // Its text can change without changing its size.
+    const texts = typeof MutationObserver === 'undefined' ? undefined : new MutationObserver(readText);
+    texts?.observe(node, { characterData: true, childList: true, subtree: true });
     // Measured in layout pixels, which the Viewport's transform doesn't change (ADR 0015).
     measure = () => {
       const width = node.offsetWidth;
@@ -135,6 +145,7 @@ export function Node(props: NodeProps): JSX.Element {
     return () => {
       observer?.disconnect();
       observer = undefined;
+      texts?.disconnect();
       measure = undefined;
       detach();
       // Disposal is an owned scope, where state may not be written: forget the sizes just after, unless a Node with
@@ -143,6 +154,7 @@ export function Node(props: NodeProps): JSX.Element {
         if (internals.nodeOptions.has(name)) return;
         internals.setMeasuredSize(name, undefined);
         internals.setMeasuredPorts(name, undefined);
+        internals.setNodeText(name, undefined);
       });
     };
   });
@@ -164,6 +176,10 @@ export function Node(props: NodeProps): JSX.Element {
       ref={(node) => (element = node)}
       class={props.class ? `slp-flow-node ${props.class}` : 'slp-flow-node'}
       data-flow-node={props.id}
+      tabindex="-1"
+      role="group"
+      aria-roledescription={internals.messages().node}
+      aria-label={internals.nodeName(props.id)}
       data-selected={record()?.selected ? '' : undefined}
       data-draggable={flow.interactive() && record()?.draggable !== false ? '' : undefined}
       data-dragging={internals.dragging(props.id) ? '' : undefined}

@@ -1,5 +1,6 @@
 // The keyboard on a focused Flow: arrow keys move the Selection, Delete and Backspace remove it, Escape cancels a
 // Connection or clears the Selection. Each key press is one Batch without a phase (ADR 0014).
+import { keepFocus } from '../accessibility/focus';
 import { removal } from '../changes/apply';
 import type { Change } from '../changes/changes';
 import type { FlowApi } from '../flow/Flow';
@@ -43,7 +44,9 @@ export function attachKeyboard(root: HTMLElement, flow: FlowApi, cancelConnectio
       const selected = selectedIds(state);
       if (!selected.nodes.size && !selected.edges.size) return;
       event.preventDefault();
-      flow.emit({ changes: [removal(state, { nodes: [...selected.nodes], edges: [...selected.edges] })] });
+      const change = removal(state, { nodes: [...selected.nodes], edges: [...selected.edges] });
+      keepFocus(root, change);
+      flow.emit({ changes: [change] });
       return;
     }
 

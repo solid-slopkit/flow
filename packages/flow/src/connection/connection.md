@@ -83,6 +83,10 @@ Exactly one of `source` and `target` is set. Send the new Node and its Edge in o
 
 Reconnecting never calls it: dropping an Edge's end on empty space removes the Edge.
 
+## From the keyboard
+
+Enter on a focused `<Port>` starts a Connection; Tab, Shift+Tab or the arrow keys move focus over the Ports it may end on, Enter on one sends the same `connect` Batch, and Escape cancels. See [accessibility](../accessibility/accessibility.md).
+
 ## State and styling
 
 `useFlow().connection()` is the Connection being dragged, `undefined` otherwise. Reactive.

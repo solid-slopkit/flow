@@ -1,5 +1,6 @@
 // Copy, cut and paste through the clipboard events (ADR 0022). They reach the Flow while it, or something in it, has
 // focus; inside a text field they are the field's own.
+import { keepFocus } from '../accessibility/focus';
 import { removal } from '../changes/apply';
 import type { FlowApi } from '../flow/Flow';
 import type { FlowInternals } from '../flow/internals';
@@ -40,7 +41,9 @@ export function attachClipboard(root: HTMLElement, flow: FlowApi, internals: Flo
     const state = flow.state();
     const nodes = state.nodes.filter((node) => node.selected).map((node) => node.id);
     const edges = state.edges.filter((edge) => edge.selected).map((edge) => edge.id);
-    flow.emit({ changes: [removal(state, { nodes, edges })] });
+    const change = removal(state, { nodes, edges });
+    keepFocus(root, change);
+    flow.emit({ changes: [change] });
   };
 
   const onPaste = (event: ClipboardEvent) => {

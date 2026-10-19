@@ -34,7 +34,7 @@ export type ConnectEnd = {
   target?: End;
 };
 
-const OPPOSITE: Record<Side, Side> = {
+export const OPPOSITE: Record<Side, Side> = {
   top: 'bottom',
   right: 'left',
   bottom: 'top',
@@ -42,8 +42,35 @@ const OPPOSITE: Record<Side, Side> = {
 };
 const sameEnd = (a: End, b: End) => a.node === b.node && a.port === b.port;
 
-type Candidate = { end: End; ends: { source: End; target: End } };
+/** A Port a Connection may end on, and the Source and Target of the Edge it would make there. */
+export type Candidate = { end: End; ends: { source: End; target: End } };
 type Reconnecting = { edge: string; end: 'source' | 'target' };
+
+/** Every Port known to the Flow, measured or declared, that a Connection from `from` may end on. */
+export function connectionCandidates(
+  flow: FlowApi,
+  internals: FlowInternals,
+  from: End,
+  reconnecting?: Reconnecting,
+): Candidate[] {
+  const index = flow.index();
+  const fromRole = reconnecting && (reconnecting.end === 'source' ? ('target' as const) : ('source' as const));
+  const options = {
+    fromRole,
+    edge: reconnecting?.edge,
+    canConnect: internals.canConnect(),
+  };
+  const found: Candidate[] = [];
+  for (const node of flow.state().nodes) {
+    const ids = new Set([...Object.keys(internals.measuredPorts(node.id) ?? {}), ...(node.ports ?? []).map((spec) => spec.id)]);
+    for (const port of ids) {
+      const end = { node: node.id, port };
+      const ends = connectionEnds(index, flow.port, from, end, options);
+      if (ends) found.push({ end, ends });
+    }
+  }
+  return found;
+}
 
 /** Attaches the Connection gesture: `cancel` drops a Connection in progress, `true` when there was one. */
 export function attachConnections(
@@ -68,27 +95,6 @@ export function attachConnections(
   const measured = (node: string) => internals.measuredSize(node);
   const ports = (node: string, port: string) => internals.measuredPorts(node)?.[port];
   const pointOf = (end: End) => portPoint(flow.index(), end, measured, ports);
-
-  /** Every Port known to the Flow, measured or declared, that the Connection may end on. */
-  const candidates = (from: End, reconnecting: Reconnecting | undefined): Candidate[] => {
-    const index = flow.index();
-    const fromRole = reconnecting && (reconnecting.end === 'source' ? ('target' as const) : ('source' as const));
-    const options = {
-      fromRole,
-      edge: reconnecting?.edge,
-      canConnect: internals.canConnect(),
-    };
-    const found: Candidate[] = [];
-    for (const node of flow.state().nodes) {
-      const ids = new Set([...Object.keys(internals.measuredPorts(node.id) ?? {}), ...(node.ports ?? []).map((spec) => spec.id)]);
-      for (const port of ids) {
-        const end = { node: node.id, port };
-        const ends = connectionEnds(index, flow.port, from, end, options);
-        if (ends) found.push({ end, ends });
-      }
-    }
-    return found;
-  };
 
   /** The valid Port the pointer is over, else the nearest one within the radius. */
   const snap = (event: PointerEvent, position: Point): Candidate | undefined => {
@@ -170,7 +176,7 @@ export function attachConnections(
     if (!gesture.started) {
       if (Math.hypot(event.clientX - gesture.screen.x, event.clientY - gesture.screen.y) < DRAG_THRESHOLD) return;
       gesture.started = true;
-      gesture.candidates = candidates(gesture.from, gesture.reconnecting);
+      gesture.candidates = connectionCandidates(flow, internals, gesture.from, gesture.reconnecting);
     }
     const position = flow.screenToFlow({ x: event.clientX, y: event.clientY });
     gesture.position = position;

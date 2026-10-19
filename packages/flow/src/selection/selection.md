@@ -30,17 +30,19 @@ Shift-dragging empty space draws the selection box instead of panning.
 
 ## The keyboard
 
-The Flow's root has `tabindex="0"`: a click in it focuses it, and so does Tab. These keys act on a focused Flow, or on anything focused inside it:
+The Flow's root has `tabindex="0"`, and its Nodes, Ports and Edges `tabindex="-1"`: a click focuses what it lands on (empty space focuses the root), and Tab focuses the root, then moves over the Nodes, Ports and Edges in spatial order, where Space selects (see [accessibility](../accessibility/accessibility.md)). These keys act on a focused Flow, or on anything focused inside it:
 
 | Key               | Does                                                                                     |
 | ----------------- | ---------------------------------------------------------------------------------------- |
 | Arrow keys        | move the selected Nodes 1 Flow unit; with Shift, 10. One `move` Batch per key press.     |
 | Delete, Backspace | remove the selected Nodes and Edges, with the Nodes nested in them and the Edges at them |
-| Escape            | cancels a Connection being dragged; otherwise clears the Selection                       |
+| Escape            | cancels a Connection, dragged or from the keyboard; otherwise clears the Selection       |
 
 - Arrow keys move only Nodes that can be dragged (`draggable` isn't `false`); a selected Node whose Parent is also selected moves with it.
 - The removal is one `remove` Change built like `removal(state, { nodes, edges })` (see [changes](../changes/changes.md)), so undoing it puts everything back where it was.
 - Keys typed in an `input`, `textarea`, `select` or editable content are the field's own, and so are keys with Ctrl, Meta or Alt held. A handled key's default action is prevented.
+- Removing the focused Node or Edge moves focus to the Flow's root.
+- Each of these Batches is announced in the Flow's live region (see [accessibility](../accessibility/accessibility.md)).
 - A read-only Flow moves and removes nothing; Escape still cancels and clears.
 
 ## Focus styling

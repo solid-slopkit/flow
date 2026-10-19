@@ -1,15 +1,33 @@
-import { createContext, createMemo, createSignal, createStore, For, onSettled, Show, untrack, useContext } from 'solid-js';
+import { VisuallyHidden } from '@solid-slopkit/components';
+import {
+  createContext,
+  createMemo,
+  createSignal,
+  createStore,
+  createUniqueId,
+  For,
+  onSettled,
+  Show,
+  untrack,
+  useContext,
+} from 'solid-js';
 import type { JSX } from '@solidjs/web';
 
-import type { Batch } from '../changes/changes';
+import { announcement } from '../accessibility/announce';
+import { attachFocus } from '../accessibility/focus';
+import { defaultMessages, type FlowMessages } from '../accessibility/messages';
+
+import type { Batch, Change } from '../changes/changes';
 import { attachConnections, type Connection, type ConnectEnd } from '../connection/connect';
 import { ConnectionLine } from '../connection/ConnectionLine';
+import { attachKeyboardConnections } from '../connection/keyboard';
 import type { ConnectionRule } from '../connection/rules';
 import { attachClipboard } from '../clipboard/clipboard';
 import type { ClipboardPayload } from '../clipboard/payload';
 import { registerDropTarget } from '../palette/FlowDraggable';
 import { attachKeyboard } from '../selection/keyboard';
 import { attachSelection, type SelectionMode } from '../selection/pointer';
+import { selectedIds, type SelectedIds } from '../selection/select';
 import { nodeBounds } from '../geometry/geometry';
 import { indexFlow, type FlowIndex } from '../model/flow-index';
 import type { End, FlowNode, FlowState, Point, Rect, Size } from '../model/model';
@@ -91,6 +109,10 @@ export interface FlowProps<N = unknown, E = unknown> {
   transformPaste?: (payload: ClipboardPayload<N, E>) => ClipboardPayload<N, E> | undefined;
   /** A `<FlowDraggable>` was dropped on the Flow: its `data`, and the drop point in Flow coordinates. */
   onDrop?: (drop: { data: unknown; position: Point }) => void;
+  /** The Flow's accessible name. Defaults to `messages.flow`. */
+  'aria-label'?: string;
+  /** Replaces any of the labels and announcements the Flow writes for assistive technology, to word or translate them. */
+  messages?: Partial<FlowMessages>;
   /** The Flow's declared width in pixels, used until it is measured, and on the server. */
   width?: number;
   /** The Flow's declared height in pixels. */
@@ -238,6 +260,19 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
     setSelectionBoxSignal(box);
     setBoxShown(box !== undefined);
   };
+  const messages = createMemo((): FlowMessages => ({ ...defaultMessages, ...props.messages }), { name: 'messages' });
+  // Each Node's text, read when it is measured or its content changes: the name it goes by unless it has an aria-label.
+  const [texts, setTexts] = createStore<Record<string, string>>({});
+  const nodeOptions = new Map<string, NodeOptions>();
+  const nodeName = (id: string) => nodeOptions.get(id)?.label || texts[id] || id;
+  // What the live region says. The same message twice in a row differs by a trailing space, so it is read again.
+  const [spoken, setSpoken] = createSignal('', { name: 'announcement' });
+  let alternate = false;
+  const announce = (text: string) => {
+    if (!text) return;
+    alternate = !alternate;
+    setSpoken(alternate ? text : `${text}\u00a0`);
+  };
   // Each <Edge> adds its layers while it renders, so this is written from a component body by design.
   const [edgeLayers, setEdgeLayers] = createSignal<readonly EdgeLayers[]>([], { name: 'edgeLayers', ownedWrite: true });
   const internals: FlowInternals = {
@@ -268,7 +303,17 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
       });
     },
     zOrder: (id) => zOrder().get(id) ?? 0,
-    nodeOptions: new Map<string, NodeOptions>(),
+    nodeOptions,
+    setNodeText: (id, text) => {
+      if (untrack(() => texts[id], false) === text) return;
+      setTexts((draft) => {
+        if (text === undefined) delete draft[id];
+        else draft[id] = text;
+      });
+    },
+    nodeName,
+    messages,
+    announce,
     portInfo: new Map<string, Map<string, PortInfo>>(),
     edgeLayers,
     addEdgeLayers: (layers) => setEdgeLayers((list) => [...list, layers]),
@@ -356,11 +401,33 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
   };
   const fitBounds = (bounds: Rect, options?: FitOptions) => setViewport(viewportForBounds(bounds, size(), zoomLimits(), options));
 
+  // A gesture in phases is announced once, at its end, from all its Changes and the Selection before it.
+  let gesture: { changes: Change[]; selected: SelectedIds } | undefined;
+  const announceBatch = (batch: Batch<N, E>) => {
+    const changes = batch.changes as Change[];
+    if (batch.phase === 'start' || batch.phase === 'update') {
+      gesture ??= { changes: [], selected: selectedIds(props.state as FlowState) };
+      gesture.changes.push(...changes);
+      return;
+    }
+    const before = batch.phase === 'end' ? gesture : undefined;
+    gesture = undefined;
+    const text = announcement(before ? [...before.changes, ...changes] : changes, {
+      index: index() as FlowIndex,
+      selected: before?.selected ?? selectedIds(props.state as FlowState),
+      nodeName,
+      messages: messages(),
+    });
+    if (text) announce(text);
+  };
+
   const api: FlowApi<N, E> = {
     state: () => props.state,
     index,
     emit: (batch) => {
-      if (props.interactive ?? true) props.onChange?.(batch);
+      if (!(props.interactive ?? true)) return;
+      announceBatch(batch);
+      props.onChange?.(batch);
     },
     createId: () => (props.createId ?? (() => crypto.randomUUID()))(),
     interactive: () => props.interactive ?? true,
@@ -418,7 +485,10 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
     });
     const connections = attachConnections(element, api as FlowApi, internals);
     const detachSelection = attachSelection(element, api as FlowApi, internals);
-    const detachKeyboard = attachKeyboard(element, api as FlowApi, connections.cancel);
+    // In this order: a keyboard Connection takes its keys first, then focus moves, then the Selection's keys.
+    const keyboardConnections = attachKeyboardConnections(element, api as FlowApi, internals);
+    const detachFocus = attachFocus(element, api as FlowApi);
+    const detachKeyboard = attachKeyboard(element, api as FlowApi, () => connections.cancel() || keyboardConnections.cancel());
     const detachClipboard = attachClipboard(element, api as FlowApi, internals);
     const unregister = registerDropTarget(element, (data, point) => {
       if (api.interactive()) props.onDrop?.({ data, position: api.screenToFlow(point) });
@@ -428,6 +498,8 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
       detach();
       connections.detach();
       detachSelection();
+      keyboardConnections.detach();
+      detachFocus();
       detachKeyboard();
       detachClipboard();
       unregister();
@@ -443,6 +515,8 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
     return `translate(${x}px, ${y}px) scale(${zoom})`;
   };
 
+  const instructions = createUniqueId();
+
   return (
     <FlowContext value={api}>
       <FlowInternalsContext value={internals}>
@@ -455,6 +529,9 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
             ...props.style,
           }}
           tabindex="0"
+          role="application"
+          aria-label={props['aria-label'] ?? messages().flow}
+          aria-describedby={instructions}
           data-flow-pane
           data-connecting={connecting() ? '' : undefined}
         >
@@ -476,6 +553,10 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
           <Show when={boxShown()}>
             <div class="slp-flow-selection-box" style={boxStyle()} />
           </Show>
+          <VisuallyHidden id={instructions}>{messages().instructions}</VisuallyHidden>
+          <VisuallyHidden as="div" class="slp-flow-live" role="status" aria-live="polite">
+            {spoken()}
+          </VisuallyHidden>
         </div>
       </FlowInternalsContext>
     </FlowContext>

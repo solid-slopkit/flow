@@ -17,6 +17,8 @@ export interface PortProps {
   kind?: PortKind;
   /** The most Edges it accepts. Defaults to the declared `max`, else unlimited. */
   max?: number;
+  /** The Port's name for assistive technology. Defaults to `messages.portLabel`, from its id and its Node's name. */
+  'aria-label'?: string;
   class?: string;
   style?: JSX.CSSProperties;
   children?: JSX.Element;
@@ -76,6 +78,11 @@ export function Port(props: PortProps): JSX.Element {
       ref={(port) => (element = port)}
       class={props.class ? `slp-flow-port ${props.class}` : 'slp-flow-port'}
       data-flow-port={props.id}
+      tabindex="-1"
+      role="button"
+      aria-roledescription={internals.messages().port}
+      aria-label={props['aria-label'] ?? internals.messages().portLabel({ port: id, node: internals.nodeName(nodeId) })}
+      aria-disabled={flow.interactive() ? undefined : 'true'}
       data-flow-port-side={side()}
       data-flow-port-kind={kind()}
       data-connectable={flow.interactive() ? '' : undefined}
