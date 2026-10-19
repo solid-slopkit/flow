@@ -52,10 +52,10 @@ Pure TypeScript, no components yet. Everything here works without a DOM.
 
 ## F4 — Ports and Edges
 
-- [ ] **F4.01** `<Port>`: side, kind, `max`, measured position; declared Ports from data used until measured (ADR 0018, 0019).
-- [ ] **F4.02** `<Edge>` and the shape functions bezier, straight, step and smooth step, with the reserved `context` argument (ADR 0021); Floating ends.
-- [ ] **F4.03** Custom Edges: the computed path, label point and state exposed to the app's JSX.
-- [ ] **F4.04** Markers that follow the Edge's stroke, and HTML Edge labels in the label layer.
+- [x] **F4.01** `<Port>`: side, kind, `max`, measured position; declared Ports from data used until measured (ADR 0018, 0019).
+- [x] **F4.02** `<Edge>` and the shape functions bezier, straight, step and smooth step, with the reserved `context` argument (ADR 0021); Floating ends.
+- [x] **F4.03** Custom Edges: the computed path, label point and state exposed to the app's JSX.
+- [x] **F4.04** Markers that follow the Edge's stroke, and HTML Edge labels in the label layer.
 
 ## F5 — Connections
 

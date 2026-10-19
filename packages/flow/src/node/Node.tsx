@@ -29,6 +29,16 @@ const NodeContext = createContext<NodeApi>(undefined, { name: 'Node' });
 /** Inside a `<Node>`'s content: which Node it is. Throws outside a Node. */
 export const useNode = (): NodeApi => useContext(NodeContext);
 
+/** How a `<Port>` gets its Node to measure it: once it is in the page, and again whenever it moves. */
+export interface NodeMeasuring {
+  /** Measures the Port element now and whenever it resizes; the returned function stops that. */
+  observePort(element: HTMLElement): () => void;
+  /** Measures the Node and its Ports again. */
+  measure(): void;
+}
+
+export const NodeMeasuringContext = createContext<NodeMeasuring>(undefined, { name: 'NodeMeasuring' });
+
 const samePoint = (a: Point, b: Point) => a.x === b.x && a.y === b.y;
 
 /** The side of a box a point inside it is closest to. */
@@ -65,19 +75,46 @@ export function Node(props: NodeProps): JSX.Element {
   });
   onCleanup(() => internals.nodeOptions.delete(name));
 
+  // Ports rendered with <Port> register here, so one added after the Node is in the page is observed too.
+  const portElements = new Set<HTMLElement>();
+  // A Port being removed is still in the page while it cleans up: it must not be measured again.
+  const removedPorts = new WeakSet<Element>();
+  let observer: ResizeObserver | undefined;
+  let measure: (() => void) | undefined;
+  const measuring: NodeMeasuring = {
+    observePort: (port) => {
+      portElements.add(port);
+      observer?.observe(port);
+      measure?.();
+      return () => {
+        portElements.delete(port);
+        removedPorts.add(port);
+        observer?.unobserve(port);
+        measure?.();
+      };
+    },
+    measure: () => measure?.(),
+  };
+
   onSettled(() => {
     const node = element!;
     // Measured in layout pixels, which the Viewport's transform doesn't change (ADR 0015).
-    const measure = () => {
+    measure = () => {
       const width = node.offsetWidth;
       const height = node.offsetHeight;
-      internals.setMeasuredSize(name, width || height ? { width, height } : undefined);
+      // A Node with no area isn't laid out (hidden, or no layout at all): nothing in it can be measured.
+      if (!width && !height) {
+        internals.setMeasuredSize(name, undefined);
+        internals.setMeasuredPorts(name, undefined);
+        return;
+      }
+      internals.setMeasuredSize(name, { width, height });
       const box = node.getBoundingClientRect();
       const zoom = box.width && width ? box.width / width : 1;
       const ports: Record<string, MeasuredPort> = {};
       for (const port of node.querySelectorAll<HTMLElement>('[data-flow-port]')) {
         // Ports of this Node only: a Port's own Node is the closest one around it.
-        if (port.closest('[data-flow-node]') !== node) continue;
+        if (port.closest('[data-flow-node]') !== node || removedPorts.has(port)) continue;
         const rect = port.getBoundingClientRect();
         const centre = {
           x: (rect.left + rect.width / 2 - box.left) / zoom,
@@ -89,12 +126,15 @@ export function Node(props: NodeProps): JSX.Element {
       internals.setMeasuredPorts(name, Object.keys(ports).length ? ports : undefined);
     };
     measure();
-    const observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure);
+    observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure);
     observer?.observe(node);
     for (const port of node.querySelectorAll('[data-flow-port]')) observer?.observe(port);
+    for (const port of portElements) observer?.observe(port);
     const detach = attachNodeDrag(node, id, flow, internals, () => props.dragHandle);
     return () => {
       observer?.disconnect();
+      observer = undefined;
+      measure = undefined;
       detach();
       internals.setMeasuredSize(name, undefined);
       internals.setMeasuredPorts(name, undefined);
@@ -124,7 +164,9 @@ export function Node(props: NodeProps): JSX.Element {
       data-drop-target={internals.dropTarget() === props.id ? '' : undefined}
       style={style()}
     >
-      <NodeContext value={{ id }}>{props.children}</NodeContext>
+      <NodeContext value={{ id }}>
+        <NodeMeasuringContext value={measuring}>{props.children}</NodeMeasuringContext>
+      </NodeContext>
     </div>
   );
 }

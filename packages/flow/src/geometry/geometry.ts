@@ -9,6 +9,12 @@ export type MeasuredSizes = (node: string) => Size | undefined;
 export type EndPoint = Point & { side: Side };
 
 /**
+ * A Port's measured point, relative to its Node's top-left corner, or `undefined` while it isn't rendered and measured
+ * (ADR 0015).
+ */
+export type MeasuredPorts = (node: string, port: string) => EndPoint | undefined;
+
+/**
  * A Node's position in Flow coordinates: its own position plus its Parents'. A `parent` naming a missing Node, or one
  * that would close a cycle, ends the walk there.
  */
@@ -34,9 +40,17 @@ export function nodeBounds(index: FlowIndex, id: string, measured?: MeasuredSize
   return position && { ...position, width: size.width, height: size.height };
 }
 
-/** The point of a Port declared in its Node's `ports`; `undefined` for a Floating end or an undeclared Port. */
-export function portPoint(index: FlowIndex, end: End, measured?: MeasuredSizes): EndPoint | undefined {
+/**
+ * The point of a Port: where it was measured, else where its Node's `ports` declare it (ADR 0019). `undefined` for a
+ * Floating end, or a Port neither measured nor declared.
+ */
+export function portPoint(index: FlowIndex, end: End, measured?: MeasuredSizes, ports?: MeasuredPorts): EndPoint | undefined {
   if (end.port === undefined) return undefined;
+  const found = ports?.(end.node, end.port);
+  if (found) {
+    const position = absolutePosition(index, end.node);
+    return position && { x: position.x + found.x, y: position.y + found.y, side: found.side };
+  }
   const port = index.node(end.node)?.ports?.find((spec) => spec.id === end.port);
   const bounds = port && nodeBounds(index, end.node, measured);
   if (!port || !bounds) return undefined;
@@ -74,18 +88,19 @@ const centre = (rect: Rect): Point => ({ x: rect.x + rect.width / 2, y: rect.y +
 
 /**
  * Both ends of an Edge in Flow coordinates. A Floating end is clipped toward the other end: its Port point, or the
- * centre of its Node. `undefined` while either Node has no size, or a named Port isn't declared.
+ * centre of its Node. `undefined` while either Node has no size, or a named Port is neither measured nor declared.
  */
 export function edgeEnds(
   index: FlowIndex,
   edge: FlowEdge,
   measured?: MeasuredSizes,
+  ports?: MeasuredPorts,
 ): { source: EndPoint; target: EndPoint } | undefined {
   const sourceBounds = nodeBounds(index, edge.source.node, measured);
   const targetBounds = nodeBounds(index, edge.target.node, measured);
   if (!sourceBounds || !targetBounds) return undefined;
-  const sourcePort = portPoint(index, edge.source, measured);
-  const targetPort = portPoint(index, edge.target, measured);
+  const sourcePort = portPoint(index, edge.source, measured, ports);
+  const targetPort = portPoint(index, edge.target, measured, ports);
   if ((edge.source.port !== undefined && !sourcePort) || (edge.target.port !== undefined && !targetPort)) return undefined;
   return {
     source: sourcePort ?? floatingPoint(sourceBounds, targetPort ?? centre(targetBounds)),

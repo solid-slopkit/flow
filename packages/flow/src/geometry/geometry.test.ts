@@ -71,6 +71,14 @@ describe('portPoint', () => {
     expect(portPoint(index, { node: 'unsized', port: 'out' })).toBeUndefined();
   });
 
+  test('a measured Port wins over its declaration, and needs no declaration', () => {
+    const ports = (node: string, port: string) =>
+      node === 'leaf' && (port === 'out' || port === 'extra') ? { x: 90, y: 10, side: 'bottom' as const } : undefined;
+    expect(portPoint(index, { node: 'leaf', port: 'out' }, undefined, ports)).toEqual({ x: 205, y: 135, side: 'bottom' });
+    expect(portPoint(index, { node: 'leaf', port: 'extra' }, undefined, ports)).toEqual({ x: 205, y: 135, side: 'bottom' });
+    expect(portPoint(index, { node: 'leaf', port: 'top' }, undefined, ports)).toEqual({ x: 140, y: 125, side: 'top' });
+  });
+
   test.each([
     ['top', { x: 25, y: 0 }],
     ['right', { x: 100, y: 25 }],
@@ -114,6 +122,14 @@ describe('edgeEnds', () => {
     expect(edgeEnds(index, edge({ node: 'free' }, { node: 'outer' }))).toEqual({
       source: { x: 1000, y: 160, side: 'left' },
       target: { x: 500, y: 260, side: 'right' },
+    });
+  });
+
+  test('uses measured Ports', () => {
+    const ports = () => ({ x: 0, y: 200, side: 'left' as const });
+    expect(edgeEnds(index, edge({ node: 'free', port: 'in' }, { node: 'outer' }), undefined, ports)).toEqual({
+      source: { x: 1000, y: 300, side: 'left' },
+      target: { x: 500, y: 300, side: 'right' },
     });
   });
 

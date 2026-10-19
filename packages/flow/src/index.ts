@@ -20,6 +20,7 @@ export {
   nodeBounds,
   portPoint,
   type EndPoint,
+  type MeasuredPorts,
   type MeasuredSizes,
 } from './geometry/geometry';
 export {
@@ -44,6 +45,18 @@ export { applyChanges, removal } from './changes/apply';
 export { createHistory, type History, type HistoryOptions } from './history/history';
 export { Flow, useFlow, type FitViewOptions, type FlowApi, type FlowProps } from './flow/Flow';
 export type { FitOptions, Viewport, ZoomLimits } from './viewport/viewport';
-export type { MeasuredPort } from './flow/internals';
+export type { MeasuredPort, PortInfo } from './flow/internals';
 export { Node, useNode, type NodeApi, type NodeProps } from './node/Node';
 export { NodeResizer, type NodeResizerProps } from './node/NodeResizer';
+export { Port, type PortProps } from './port/Port';
+export { Edge, EdgePath, useEdge, type EdgeApi, type EdgeMarker, type EdgeMarkerType, type EdgeProps } from './edge/Edge';
+export {
+  bezierShape,
+  edgeShapes,
+  smoothStepShape,
+  stepShape,
+  straightShape,
+  type EdgeGeometry,
+  type EdgeShape,
+  type EdgeShapeContext,
+} from './edge/shapes';

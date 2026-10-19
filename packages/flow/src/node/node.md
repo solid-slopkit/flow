@@ -36,7 +36,7 @@ import { Flow, Node, NodeResizer } from '@solid-slopkit/flow';
 
 The Flow measures every rendered Node with `ResizeObserver`, in layout pixels (the zoom doesn't change them), and keeps the Measured sizes as its own state, keyed by Node id: `useFlow().measuredSize(id)`. Geometry, `fitView` and dragging use the Measured size, else the Declared one.
 
-Ports are elements inside a Node with `data-flow-port="<port id>"`. Each is measured with its centre relative to the Node's top-left corner, and its side from `data-flow-port-side`, else the side of the Node it is nearest: `useFlow().measuredPort(node, port)` returns `{ x, y, side }`.
+Ports are `<Port>`s (see [ports](../port/port.md)), or any elements inside a Node with `data-flow-port="<port id>"`. Each is measured with its centre relative to the Node's top-left corner, and its side from `data-flow-port-side`, else the side of the Node it is nearest: `useFlow().measuredPort(node, port)` returns `{ x, y, side }`. A Node with no area (hidden, not laid out) has neither a Measured size nor measured Ports.
 
 ## Dragging
 

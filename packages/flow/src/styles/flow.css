@@ -63,6 +63,41 @@
     pointer-events: none;
   }
 
+  /* An Edge's markers are defined inside it, so they take its color: recolor an Edge with `color`. */
+  .slp-flow-edge {
+    color: var(--_flow-edge-color);
+
+    &[data-selected] {
+      color: var(--_flow-selection-color);
+    }
+  }
+
+  .slp-flow-edge-path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+  }
+
+  .slp-flow-marker path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .slp-flow-marker[data-marker='arrow-closed'] path {
+    fill: currentColor;
+  }
+
+  /* Centred on the Edge's label point; its content is the app's HTML, so it takes pointer input. */
+  .slp-flow-edge-label {
+    position: absolute;
+    inset: 0 auto auto 0;
+    pointer-events: auto;
+    white-space: nowrap;
+  }
+
   /* A Node is positioned by transform from its top-left corner; its content sets its size unless it has a Declared one. */
   .slp-flow-node {
     position: absolute;
@@ -85,6 +120,36 @@
     &[data-drop-target] {
       outline: 2px dashed var(--_flow-selection-color);
       outline-offset: 4px;
+    }
+  }
+
+  /* A Port is centred on its side, `--_flow-port-offset` along it. Without a side, the app places it. */
+  .slp-flow-port {
+    --_flow-port-size: 8px;
+
+    position: absolute;
+    width: var(--_flow-port-size);
+    height: var(--_flow-port-size);
+    translate: -50% -50%;
+    box-sizing: border-box;
+    border-radius: 50%;
+    background: var(--_flow-port-color);
+
+    &[data-flow-port-side='top'] {
+      top: 0;
+      left: calc(var(--_flow-port-offset) * 100%);
+    }
+    &[data-flow-port-side='right'] {
+      top: calc(var(--_flow-port-offset) * 100%);
+      left: 100%;
+    }
+    &[data-flow-port-side='bottom'] {
+      top: 100%;
+      left: calc(var(--_flow-port-offset) * 100%);
+    }
+    &[data-flow-port-side='left'] {
+      top: calc(var(--_flow-port-offset) * 100%);
+      left: 0;
     }
   }
 

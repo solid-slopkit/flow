@@ -17,7 +17,15 @@ import {
   type ZoomLimits,
 } from '../viewport/viewport';
 import { attachGestures } from './gestures';
-import { FlowInternalsContext, type FlowInternals, type Guide, type MeasuredPort, type NodeOptions } from './internals';
+import {
+  FlowInternalsContext,
+  type EdgeLayers,
+  type FlowInternals,
+  type Guide,
+  type MeasuredPort,
+  type NodeOptions,
+  type PortInfo,
+} from './internals';
 
 export type FitViewOptions = FitOptions & {
   /** Fit these Nodes only. Defaults to every Node with a size. */
@@ -97,6 +105,8 @@ export interface FlowApi<N = unknown, E = unknown> {
   measuredSize(id: string): Size | undefined;
   /** A Port's measured centre, relative to its Node's top-left corner, and its side. Reactive. */
   measuredPort(node: string, port: string): MeasuredPort | undefined;
+  /** A Port's side, kind and `max`: from its rendered `<Port>`, else from its Node's declared `ports`. */
+  port(node: string, port: string): PortInfo | undefined;
 }
 
 const FlowContext = createContext<FlowApi<any, any>>(undefined, { name: 'Flow' });
@@ -170,6 +180,8 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
       a.length === b.length &&
       a.every((guide, i) => (Object.keys(guide) as (keyof Guide)[]).every((key) => guide[key] === b[i]![key])),
   });
+  // Each <Edge> adds its layers while it renders, so this is written from a component body by design.
+  const [edgeLayers, setEdgeLayers] = createSignal<readonly EdgeLayers[]>([], { name: 'edgeLayers', ownedWrite: true });
   const internals: FlowInternals = {
     measuredSize,
     setMeasuredSize: (id, size) => {
@@ -192,6 +204,10 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
       }),
     zOrder: (id) => zOrder().get(id) ?? 0,
     nodeOptions: new Map<string, NodeOptions>(),
+    portInfo: new Map<string, Map<string, PortInfo>>(),
+    edgeLayers,
+    addEdgeLayers: (layers) => setEdgeLayers((list) => [...list, layers]),
+    removeEdgeLayers: (layers) => setEdgeLayers((list) => list.filter((entry) => entry !== layers)),
     dragging: (id) => dragging().has(id),
     setDragging,
     dropTarget,
@@ -292,6 +308,14 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
     zoomLimits,
     measuredSize,
     measuredPort: (node, port) => ports[node]?.[port],
+    port: (node, port) => {
+      const rendered = internals.portInfo.get(node)?.get(port);
+      if (rendered) return rendered;
+      const spec = index()
+        .node(node)
+        ?.ports?.find((declared) => declared.id === port);
+      return spec && { side: spec.side, kind: spec.kind ?? 'both', max: spec.max };
+    },
   };
 
   onSettled(() => {
@@ -337,11 +361,15 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
           data-flow-pane
         >
           <div class="slp-flow-viewport" style={{ transform: transform() }} data-flow-pane>
-            <svg class="slp-flow-edges" data-flow-pane />
+            <svg class="slp-flow-edges" data-flow-pane>
+              <For each={edgeLayers()}>{(layers) => layers.path}</For>
+            </svg>
             <div class="slp-flow-nodes" data-flow-pane>
               {props.children}
             </div>
-            <div class="slp-flow-labels" data-flow-pane />
+            <div class="slp-flow-labels" data-flow-pane>
+              <For each={edgeLayers()}>{(layers) => layers.label}</For>
+            </div>
             <svg class="slp-flow-guides" data-flow-pane>
               <For each={guides()}>{(guide) => <line x1={guide.x1} y1={guide.y1} x2={guide.x2} y2={guide.y2} />}</For>
             </svg>
