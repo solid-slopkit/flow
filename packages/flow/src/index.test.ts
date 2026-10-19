@@ -4,6 +4,7 @@ import * as flow from './index';
 
 // The public runtime surface, pinned: adding or removing an export is a deliberate change.
 const PUBLIC_API: string[] = [
+  'Flow',
   'absolutePosition',
   'applyChanges',
   'createHistory',
@@ -14,6 +15,7 @@ const PUBLIC_API: string[] = [
   'nodeBounds',
   'portPoint',
   'removal',
+  'useFlow',
 ];
 
 describe('public API', () => {

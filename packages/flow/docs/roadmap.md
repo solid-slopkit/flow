@@ -35,10 +35,10 @@ Pure TypeScript, no components yet. Everything here works without a DOM.
 
 ## F2 — Flow and Viewport
 
-- [ ] **F2.01** `<Flow>`: takes a `FlowState`, `onChange` and `createId`; its own context, so several Flows share a page; the transformed Node layer, the SVG Edge layer and the HTML label layer (ADR 0015). Read-only mode (`interactive={false}`).
-- [ ] **F2.02** Viewport state (controlled or uncontrolled), conversion between screen and Flow coordinates, min / max zoom, `setViewport`, `zoomTo`, `zoomIn` / `zoomOut`.
-- [ ] **F2.03** Pan by dragging empty space, zoom by wheel around the pointer, the scroll-pans option, pinch zoom (ADR 0022). Browser tests.
-- [ ] **F2.04** `fitView` and `fitBounds`, with padding; on the server from the Flow's declared size (ADR 0019).
+- [x] **F2.01** `<Flow>`: takes a `FlowState`, `onChange` and `createId`; its own context, so several Flows share a page; the transformed Node layer, the SVG Edge layer and the HTML label layer (ADR 0015). Read-only mode (`interactive={false}`).
+- [x] **F2.02** Viewport state (controlled or uncontrolled), conversion between screen and Flow coordinates, min / max zoom, `setViewport`, `zoomTo`, `zoomIn` / `zoomOut`.
+- [x] **F2.03** Pan by dragging empty space, zoom by wheel around the pointer, the scroll-pans option, pinch zoom (ADR 0022). Browser tests.
+- [x] **F2.04** `fitView` and `fitBounds`, with padding; on the server from the Flow's declared size (ADR 0019).
 
 ## F3 — Nodes
 

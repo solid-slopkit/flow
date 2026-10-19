@@ -14,8 +14,19 @@ export default defineConfig({
           name: 'unit',
           environment: 'jsdom',
           include: ['src/**/*.test.{ts,tsx}', 'test/**/*.test.{ts,tsx}'],
-          exclude: ['**/*.browser.test.*'],
+          exclude: ['**/*.browser.test.*', '**/*.server.test.*'],
           setupFiles: ['./test/setup.ts'],
+        },
+      },
+      {
+        // Rendering on the server (ADR 0019): Solid's server build, no DOM.
+        extends: true,
+        resolve: { conditions: ['node', 'development'] },
+        ssr: { resolve: { conditions: ['node', 'development'], externalConditions: ['node', 'development'] } },
+        test: {
+          name: 'server',
+          environment: 'node',
+          include: ['src/**/*.server.test.{ts,tsx}', 'test/**/*.server.test.{ts,tsx}'],
         },
       },
       {

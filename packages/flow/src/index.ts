@@ -42,3 +42,5 @@ export {
 } from './changes/changes';
 export { applyChanges, removal } from './changes/apply';
 export { createHistory, type History, type HistoryOptions } from './history/history';
+export { Flow, useFlow, type FitViewOptions, type FlowApi, type FlowProps } from './flow/Flow';
+export type { FitOptions, Viewport, ZoomLimits } from './viewport/viewport';

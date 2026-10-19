@@ -26,5 +26,40 @@
     overflow: hidden;
     background: var(--_flow-background);
     color: var(--slp-color-base-content);
+    /* Every gesture is the Flow's own (ADR 0022): no browser panning or pinch zooming. */
+    touch-action: none;
+
+    &[data-panning] {
+      user-select: none;
+      cursor: grabbing;
+    }
+  }
+
+  /* One transformed box for the Viewport (ADR 0015). It has no size: the layers inside overflow it. */
+  .slp-flow-viewport {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 0;
+    height: 0;
+    transform-origin: 0 0;
+  }
+
+  /* The layers, in paint order: Edges under the Nodes, Edge labels above them. */
+  .slp-flow-edges,
+  .slp-flow-nodes,
+  .slp-flow-labels {
+    position: absolute;
+    inset: 0 auto auto 0;
+  }
+
+  .slp-flow-edges {
+    width: 1px;
+    height: 1px;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .slp-flow-labels {
+    pointer-events: none;
   }
 }
