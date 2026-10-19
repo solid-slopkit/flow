@@ -11,8 +11,12 @@ import { align, contains, keepInside, snapToGrid } from './drag-geometry';
 /** How far, in screen pixels, the pointer moves before a press becomes a drag. */
 export const DRAG_THRESHOLD = 3;
 
-/** Presses here never drag, so form controls and editable text in a Node work as on any page. */
-const NO_DRAG = 'input, textarea, select, option, [contenteditable]:not([contenteditable="false"]), [data-flow-nodrag]';
+/**
+ * Presses here never drag, so form controls and editable text in a Node work as on any page, and a press on a Port
+ * starts a Connection instead.
+ */
+const NO_DRAG =
+  'input, textarea, select, option, [contenteditable]:not([contenteditable="false"]), [data-flow-nodrag], [data-flow-port]';
 
 const isAncestor = (index: FlowIndex, ancestor: string, id: string) => {
   const seen = new Set<string>();

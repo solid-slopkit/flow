@@ -19,6 +19,8 @@ export interface EdgeProps {
   shape?: EdgeShapeName | EdgeShape;
   markerStart?: EdgeMarker;
   markerEnd?: EdgeMarker;
+  /** Dragging either end moves it to another Port, or off any Port to remove the Edge. Defaults to `true`. */
+  reconnectable?: boolean;
   /** HTML drawn at the Edge's label point, in the label layer above the Nodes. */
   label?: JSX.Element;
   class?: string;
@@ -148,11 +150,20 @@ export function Edge(props: EdgeProps): JSX.Element {
   );
 }
 
+/** An invisible handle on one end of an Edge: dragging it reconnects that end. */
+function EdgeEnd(props: { end: 'source' | 'target' }): JSX.Element {
+  const edge = useEdge();
+  const point = () => (props.end === 'source' ? edge.source() : edge.target());
+  return <circle class="slp-flow-edge-end" data-flow-edge-end={props.end} cx={point()?.x} cy={point()?.y} r="10" />;
+}
+
 /** Creates the Edge's SVG and label inside its context, and hands them to the Flow's layers. Renders nothing in place. */
 function EdgeDrawing(props: { edge: EdgeProps; markerId: string }): JSX.Element {
   const internals = useFlowInternals();
   const edge = useEdge();
+  const flow = useFlow();
   const placed = () => edge.geometry() !== undefined;
+  const reconnectable = () => flow.interactive() && (props.edge.reconnectable ?? true);
   // Resolved here, so a label that is `undefined` or `false` (a condition in the app's JSX) draws no label box.
   const content = children(() => props.edge.label);
   const hasLabel = () => {
@@ -170,11 +181,16 @@ function EdgeDrawing(props: { edge: EdgeProps; markerId: string }): JSX.Element 
         class={props.edge.class ? `slp-flow-edge ${props.edge.class}` : 'slp-flow-edge'}
         data-flow-edge={props.edge.id}
         data-selected={edge.selected() ? '' : undefined}
+        data-reconnecting={internals.reconnecting(props.edge.id) ? '' : undefined}
         style={props.edge.style}
       >
         <Show when={props.edge.markerStart}>{(marker) => <Marker id={`${props.markerId}-start`} marker={marker()} />}</Show>
         <Show when={props.edge.markerEnd}>{(marker) => <Marker id={`${props.markerId}-end`} marker={marker()} />}</Show>
         <Show when={placed()}>{'children' in props.edge ? props.edge.children : <EdgePath />}</Show>
+        <Show when={placed() && reconnectable()}>
+          <EdgeEnd end="source" />
+          <EdgeEnd end="target" />
+        </Show>
       </g>
     ),
     label: (

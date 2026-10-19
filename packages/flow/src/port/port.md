@@ -26,8 +26,12 @@ import { Node, Port } from '@solid-slopkit/flow';
 
 - "Declared" means the `PortSpec` with the same id in the Node's `ports` (see [model](../model/model.md)). Props win over it.
 - With a `side`, the stylesheet centres the Port on that side of the Node, `offset` along it. Without one, the app positions it (it is `position: absolute`), and it takes the side of the Node it ends up nearest to. Place Ports directly in the Node, or in a wrapper that isn't positioned, so they are placed against the Node's box.
-- Attributes: `data-flow-port` (the id), `data-flow-port-side`, `data-flow-port-kind`. Any element with `data-flow-port` inside a Node is measured as a Port too; `<Port>` adds placement, defaults from the declaration, and `useFlow().port()`.
+- Attributes: `data-flow-port` (the id), `data-flow-port-side`, `data-flow-port-kind`; `data-connectable` in an interactive Flow, `data-connecting` while a Connection is drawn from it, `data-connection-target` while one snaps to it. Any element with `data-flow-port` inside a Node is measured as a Port too; `<Port>` adds placement, defaults from the declaration, and `useFlow().port()`.
 - Throws outside a Node.
+
+## Connecting
+
+Pressing a Port and dragging starts a Connection, and never drags the Node; dropping it on another Port makes an Edge. The Port's kind and `max`, then the Flow's `canConnect`, decide where a Connection may end. See [connections](../connection/connection.md).
 
 ## Measured and declared Ports
 
@@ -38,4 +42,4 @@ The Flow measures each Port's centre relative to its Node (see [nodes](../node/n
 
 ## Styling
 
-`.slp-flow-port` is an 8 px dot in `--slp-flow-port-color`. Override its size, shape and color with ordinary CSS on the class, or with `class` and `style`.
+`.slp-flow-port` is an 8 px dot in `--slp-flow-port-color`, with a crosshair cursor in an interactive Flow; the Port a Connection snaps to grows and takes `--slp-flow-selection-color`. Override its size, shape and color with ordinary CSS on the class, or with `class` and `style`.

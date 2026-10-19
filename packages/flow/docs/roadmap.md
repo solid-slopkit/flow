@@ -59,9 +59,9 @@ Pure TypeScript, no components yet. Everything here works without a DOM.
 
 ## F5 — Connections
 
-- [ ] **F5.01** Dragging a Connection from a Port, its preview line, dropping on a Port to send a `connect` Batch; Port kinds, `max` and `canConnect` decide where it may end; snapping to the nearest valid Port within a radius.
-- [ ] **F5.02** Reconnecting: dragging an existing Edge's end to another Port, or off to remove it.
-- [ ] **F5.03** Dropping a Connection on empty space: `onConnectEnd` with the position in Flow coordinates, so the app can create a Node there.
+- [x] **F5.01** Dragging a Connection from a Port, its preview line, dropping on a Port to send a `connect` Batch; Port kinds, `max` and `canConnect` decide where it may end; snapping to the nearest valid Port within a radius.
+- [x] **F5.02** Reconnecting: dragging an existing Edge's end to another Port, or off to remove it.
+- [x] **F5.03** Dropping a Connection on empty space: `onConnectEnd` with the position in Flow coordinates, so the app can create a Node there.
 
 ## F6 — Selection and editing
 

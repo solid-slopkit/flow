@@ -49,6 +49,8 @@ export type { MeasuredPort, PortInfo } from './flow/internals';
 export { Node, useNode, type NodeApi, type NodeProps } from './node/Node';
 export { NodeResizer, type NodeResizerProps } from './node/NodeResizer';
 export { Port, type PortProps } from './port/Port';
+export type { Connection, ConnectEnd } from './connection/connect';
+export type { ConnectionRule } from './connection/rules';
 export { Edge, EdgePath, useEdge, type EdgeApi, type EdgeMarker, type EdgeMarkerType, type EdgeProps } from './edge/Edge';
 export {
   bezierShape,

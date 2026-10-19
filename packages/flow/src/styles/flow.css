@@ -33,6 +33,11 @@
       user-select: none;
       cursor: grabbing;
     }
+
+    &[data-connecting] {
+      user-select: none;
+      cursor: crosshair;
+    }
   }
 
   /* One transformed box for the Viewport (ADR 0015). It has no size: the layers inside overflow it. */
@@ -70,6 +75,19 @@
     &[data-selected] {
       color: var(--_flow-selection-color);
     }
+  }
+
+  /* Hidden while its end is dragged: the Connection line stands in for it. */
+  .slp-flow-edge[data-reconnecting] {
+    visibility: hidden;
+  }
+
+  /* An invisible handle on each end; under the Nodes, so a press on the Port itself starts a new Connection. */
+  .slp-flow-edge-end {
+    fill: transparent;
+    stroke: none;
+    pointer-events: all;
+    cursor: move;
   }
 
   .slp-flow-edge-path {
@@ -151,6 +169,15 @@
       top: calc(var(--_flow-port-offset) * 100%);
       left: 0;
     }
+
+    &[data-connectable] {
+      cursor: crosshair;
+    }
+
+    &[data-connection-target] {
+      background: var(--_flow-selection-color);
+      scale: 1.5;
+    }
   }
 
   .slp-flow-resizer {
@@ -209,6 +236,28 @@
     &[data-handle='left'],
     &[data-handle='right'] {
       cursor: ew-resize;
+    }
+  }
+
+  /* The Connection being dragged, above the Nodes: dashed until it snaps to a Port it may end on. */
+  .slp-flow-connection {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 1px;
+    height: 1px;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .slp-flow-connection-path {
+    fill: none;
+    stroke: var(--_flow-edge-color);
+    stroke-width: 1.5;
+    stroke-dasharray: 5 4;
+
+    &[data-valid] {
+      stroke: var(--_flow-selection-color);
+      stroke-dasharray: none;
     }
   }
 

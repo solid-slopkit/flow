@@ -78,6 +78,9 @@ export function Port(props: PortProps): JSX.Element {
       data-flow-port={props.id}
       data-flow-port-side={side()}
       data-flow-port-kind={kind()}
+      data-connectable={flow.interactive() ? '' : undefined}
+      data-connecting={internals.connectingFrom(nodeId, id) ? '' : undefined}
+      data-connection-target={internals.connectionTarget(nodeId, id) ? '' : undefined}
       style={{ '--_flow-port-offset': offset(), ...props.style }}
     >
       {props.children}

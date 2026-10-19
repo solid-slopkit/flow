@@ -40,6 +40,7 @@ The data model, Changes and History are plain TypeScript and work without a DOM.
 - Surface: `Flow`, `useFlow`, `Viewport`.
 - Nodes: `Node`, `useNode`, `NodeResizer`, `MeasuredPort`.
 - Ports: `Port`, `PortInfo`.
+- Connections: `Connection`, `ConnectEnd`, `ConnectionRule`; the Flow's `canConnect`, `connectionRadius` and `onConnectEnd`.
 - Edges: `Edge`, `useEdge`, `EdgePath`, `EdgeMarker`; shapes `bezierShape`, `straightShape`, `stepShape`, `smoothStepShape`, `edgeShapes`, `EdgeShape`, `EdgeGeometry`, `EdgeShapeContext`.
 - Records: `FlowState`, `FlowNode`, `FlowEdge`, `End`, `PortSpec`, `Side`, `PortKind`, `EdgeShapeName`, `Point`, `Size`, `Rect`; `indexFlow` for lookups by id.
 - Geometry: `absolutePosition`, `nodeBounds`, `portPoint`, `floatingPoint`, `edgeEnds`, `MeasuredSizes`, `MeasuredPorts`.
@@ -52,6 +53,7 @@ The data model, Changes and History are plain TypeScript and work without a DOM.
 - [Nodes](node/node.md): `<Node>`, measuring, dragging, nesting, snapping, alignment guides, `<NodeResizer>`.
 - [Ports](port/port.md): `<Port>`, its side, kind and `max`, measured versus declared Ports.
 - [Edges](edge/edge.md): `<Edge>`, Edge shapes, custom Edges with `useEdge`, markers, labels.
+- [Connections](connection/connection.md): dragging from a Port to make an Edge, where it may end, reconnecting, dropping on empty space.
 - [Data model](model/model.md): `FlowState` and its records, `indexFlow`.
 - [Geometry](geometry/geometry.md): absolute positions, Node bounds, Port points, Floating ends.
 - [Changes and Batches](changes/changes.md): every Change, phases, `invert`, `applyChanges`, `removal`.

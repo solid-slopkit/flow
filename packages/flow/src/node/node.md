@@ -43,7 +43,7 @@ Ports are `<Port>`s (see [ports](../port/port.md)), or any elements inside a Nod
 Pressing a Node and moving the pointer more than 3 screen pixels drags it. Each step sends a Batch of `move` Changes: phase `start`, then `update`s, then `end` (see [changes](../changes/changes.md)), so a whole drag is one History entry.
 
 - Dragging a selected Node drags every selected Node. A Node whose Parent also moves goes with it and gets no Change of its own.
-- Never dragged: Nodes with `draggable: false`, every Node in a read-only Flow, presses on `input`, `textarea`, `select`, editable content or anything inside `data-flow-nodrag`, and presses outside the `dragHandle` when one is set.
+- Never dragged: Nodes with `draggable: false`, every Node in a read-only Flow, presses on `input`, `textarea`, `select`, editable content, Ports (they start a Connection) or anything inside `data-flow-nodrag`, and presses outside the `dragHandle` when one is set.
 - Positions move in Flow coordinates, so the Node follows the pointer at any zoom. Dragging a Node never pans the Flow.
 - A cancelled pointer (`pointercancel`) ends the drag with Changes back to where it started.
 

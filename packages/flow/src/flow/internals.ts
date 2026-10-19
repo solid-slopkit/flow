@@ -3,6 +3,8 @@
 import { createContext, useContext } from 'solid-js';
 import type { JSX } from '@solidjs/web';
 
+import type { Connection, ConnectEnd } from '../connection/connect';
+import type { ConnectionRule } from '../connection/rules';
 import type { FlowNode, Point, PortKind, Side, Size } from '../model/model';
 
 /** A Port as measured in the page: its centre relative to its Node's top-left corner, and its side. */
@@ -48,6 +50,19 @@ export interface FlowInternals {
   guideThreshold(): number | undefined;
   /** Whether a dragged Node may be dropped into this Parent (`undefined`: top level); `undefined` when off. */
   reparentRule(): ReparentRule | undefined;
+  connection(): Connection | undefined;
+  setConnection(connection: Connection | undefined): void;
+  /** Whether the Connection starts at this Port; changes only when it starts or ends. */
+  connectingFrom(node: string, port: string): boolean;
+  /** Whether the Connection snaps to this Port; changes only when it snaps to another. */
+  connectionTarget(node: string, port: string): boolean;
+  /** Whether this Edge's end is being dragged. */
+  reconnecting(edge: string): boolean;
+  canConnect(): ConnectionRule | undefined;
+  /** How close, in screen pixels, a Connection snaps to a valid Port. */
+  connectionRadius(): number;
+  /** A new Connection was dropped on empty space. */
+  connectEnd(end: ConnectEnd): void;
 }
 
 export const FlowInternalsContext = createContext<FlowInternals>(undefined, { name: 'FlowInternals' });

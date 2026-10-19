@@ -2,9 +2,12 @@ import { createContext, createMemo, createSignal, createStore, For, onSettled, u
 import type { JSX } from '@solidjs/web';
 
 import type { Batch } from '../changes/changes';
+import { attachConnections, type Connection, type ConnectEnd } from '../connection/connect';
+import { ConnectionLine } from '../connection/ConnectionLine';
+import type { ConnectionRule } from '../connection/rules';
 import { nodeBounds } from '../geometry/geometry';
 import { indexFlow, type FlowIndex } from '../model/flow-index';
-import type { FlowNode, FlowState, Point, Rect, Size } from '../model/model';
+import type { End, FlowNode, FlowState, Point, Rect, Size } from '../model/model';
 import {
   clampZoom,
   toFlow,
@@ -66,6 +69,15 @@ export interface FlowProps<N = unknown, E = unknown> {
    * A function decides per Node and Parent (`undefined` for top level). Off by default.
    */
   reparentOnDrop?: boolean | ((node: FlowNode<N>, parent: FlowNode<N> | undefined) => boolean);
+  /**
+   * Whether a Connection, or a reconnected Edge, may run from `source` to `target`. Asked after Port kinds and `max`
+   * allow it (ADR 0018). Every Port is allowed by default.
+   */
+  canConnect?: ConnectionRule;
+  /** How close, in screen pixels, a dragged Connection snaps to a Port it may end on. Defaults to 20. */
+  connectionRadius?: number;
+  /** A new Connection was dropped on empty space, away from any Node: where, in Flow coordinates, and from which Port. */
+  onConnectEnd?: (end: ConnectEnd) => void;
   /** The Flow's declared width in pixels, used until it is measured, and on the server. */
   width?: number;
   /** The Flow's declared height in pixels. */
@@ -107,6 +119,8 @@ export interface FlowApi<N = unknown, E = unknown> {
   measuredPort(node: string, port: string): MeasuredPort | undefined;
   /** A Port's side, kind and `max`: from its rendered `<Port>`, else from its Node's declared `ports`. */
   port(node: string, port: string): PortInfo | undefined;
+  /** The Connection being dragged, if any. Reactive. */
+  connection(): Connection | undefined;
 }
 
 const FlowContext = createContext<FlowApi<any, any>>(undefined, { name: 'Flow' });
@@ -128,6 +142,9 @@ const samePorts = (a: Record<string, MeasuredPort> | undefined, b: Record<string
   );
 };
 const GUIDE_THRESHOLD = 6;
+const CONNECTION_RADIUS = 20;
+const endKey = (end: End | undefined) => end && `${end.node}\u0000${end.port ?? ''}`;
+type ConnectionMarks = { from: string | undefined; target: string | undefined; edge: string | undefined };
 
 /**
  * The editor surface: the app's Nodes and Edges drawn in one Viewport. Its children are the app's own JSX, rendered in
@@ -180,6 +197,24 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
       a.length === b.length &&
       a.every((guide, i) => (Object.keys(guide) as (keyof Guide)[]).every((key) => guide[key] === b[i]![key])),
   });
+  const [connection, setConnectionSignal] = createSignal<Connection | undefined>(undefined, { name: 'connection' });
+  // The Ports and Edge a Connection marks, keyed, so only those re-run when it starts, snaps or ends, not on every move.
+  const [marks, setMarks] = createStore<Record<keyof ConnectionMarks, Record<string, true>>>({ from: {}, target: {}, edge: {} });
+  let marked: ConnectionMarks = { from: undefined, target: undefined, edge: undefined };
+  const setConnection = (next: Connection | undefined) => {
+    setConnectionSignal(next);
+    const keys: ConnectionMarks = { from: endKey(next?.from), target: endKey(next?.to), edge: next?.reconnecting?.edge };
+    const kinds = (Object.keys(keys) as (keyof ConnectionMarks)[]).filter((kind) => keys[kind] !== marked[kind]);
+    if (!kinds.length) return;
+    const previous = marked;
+    marked = keys;
+    setMarks((draft) => {
+      for (const kind of kinds) {
+        if (previous[kind] !== undefined) delete draft[kind][previous[kind]];
+        if (keys[kind] !== undefined) draft[kind][keys[kind]] = true;
+      }
+    });
+  };
   // Each <Edge> adds its layers while it renders, so this is written from a component body by design.
   const [edgeLayers, setEdgeLayers] = createSignal<readonly EdgeLayers[]>([], { name: 'edgeLayers', ownedWrite: true });
   const internals: FlowInternals = {
@@ -226,6 +261,14 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
       const rule = props.reparentOnDrop;
       return rule === true ? () => true : rule || undefined;
     },
+    connection,
+    setConnection,
+    connectingFrom: (node, port) => marks.from[endKey({ node, port })!] === true,
+    connectionTarget: (node, port) => marks.target[endKey({ node, port })!] === true,
+    reconnecting: (edge) => marks.edge[edge] === true,
+    canConnect: () => props.canConnect,
+    connectionRadius: () => props.connectionRadius ?? CONNECTION_RADIUS,
+    connectEnd: (end) => props.onConnectEnd?.(end),
   };
 
   // Fitting from the declared size happens here, while rendering, so the server sends the fitted Viewport.
@@ -316,6 +359,7 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
         ?.ports?.find((declared) => declared.id === port);
       return spec && { side: spec.side, kind: spec.kind ?? 'both', max: spec.max };
     },
+    connection,
   };
 
   onSettled(() => {
@@ -336,12 +380,15 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
       limits: zoomLimits,
       scrollPans: () => props.scrollPans ?? false,
     });
+    const detachConnections = attachConnections(element, api as FlowApi, internals);
     return () => {
       observer?.disconnect();
       detach();
+      detachConnections();
     };
   });
 
+  const connecting = createMemo(() => connection() !== undefined, { name: 'connecting' });
   const transform = () => {
     const { x, y, zoom } = viewport();
     return `translate(${x}px, ${y}px) scale(${zoom})`;
@@ -359,6 +406,7 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
             ...props.style,
           }}
           data-flow-pane
+          data-connecting={connecting() ? '' : undefined}
         >
           <div class="slp-flow-viewport" style={{ transform: transform() }} data-flow-pane>
             <svg class="slp-flow-edges" data-flow-pane>
@@ -370,6 +418,7 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
             <div class="slp-flow-labels" data-flow-pane>
               <For each={edgeLayers()}>{(layers) => layers.label}</For>
             </div>
+            <ConnectionLine />
             <svg class="slp-flow-guides" data-flow-pane>
               <For each={guides()}>{(guide) => <line x1={guide.x1} y1={guide.y1} x2={guide.x2} y2={guide.y2} />}</For>
             </svg>
