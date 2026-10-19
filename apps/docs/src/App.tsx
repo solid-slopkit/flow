@@ -6,6 +6,7 @@ import '@solid-slopkit/components/styles/slopkit.css';
 import '@solid-slopkit/components/styles/default-theme.css';
 import '@solid-slopkit/flow/styles/flow.css';
 import './themes.css';
+import './examples/examples.css';
 
 import './App.css';
 

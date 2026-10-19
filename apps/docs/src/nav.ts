@@ -20,6 +20,13 @@ export interface NavSection {
 export const nav: NavSection[] = [
   {
     title: 'flow',
-    items: [{ title: 'Overview', href: '/' }],
+    items: [
+      { title: 'Overview', href: '/' },
+      { title: 'Flow and Viewport', href: '/flow' },
+      { title: 'Nodes', href: '/nodes' },
+      { title: 'Ports and Edges', href: '/edges' },
+      { title: 'Connections', href: '/connections' },
+      { title: 'Selection and editing', href: '/editing' },
+    ],
   },
 ];
