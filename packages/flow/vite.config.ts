@@ -34,6 +34,9 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'browser',
+          // After the jsdom and server projects, not beside them: its captures keep the compute-time check
+          // (HOT_SCOPE_TIME), which the jsdom workers' CPU load would otherwise trip at random.
+          sequence: { groupOrder: 1 },
           include: ['src/**/*.browser.test.{ts,tsx}', 'test/**/*.browser.test.{ts,tsx}'],
           setupFiles: ['./test/setup.ts'],
           browser: {

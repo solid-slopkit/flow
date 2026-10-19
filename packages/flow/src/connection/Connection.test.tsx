@@ -1,4 +1,4 @@
-import { captureArtifact } from '@solidjs/diagnostics';
+import { captureArtifact } from '../../test/capture';
 import { flush } from 'solid-js';
 import { describe, expect, test } from 'vitest';
 
