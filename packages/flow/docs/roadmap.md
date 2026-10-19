@@ -13,7 +13,7 @@
 - jsdom tests for behavior and reactivity. Tests that need real layout or real pointer input go in the browser project (`*.browser.test.tsx`).
 - `toHaveNoDiagnostics()`, plus a re-run budget on the main update path (`@solidjs/diagnostics/vitest`).
 - The LLM reference for the topic (next to the source, indexed in `src/llms.md`, ADR 0012) is updated in the same commit.
-- Exported from the package entry (or its subpath), and the entry never imports a subpath (ADR 0002).
+- Exported from the package entry.
 
 ---
 
