@@ -21,7 +21,8 @@
       "types": "./dist/types/index.d.ts",
       "solid": "./dist/source/index.js",
       "default": "./dist/source/index.js"
-    }
+    },
+    "./styles/flow.css": "./dist/source/styles/flow.css"
   },
   "publishConfig": {
     "access": "public"
@@ -30,11 +31,12 @@
     "build": "pnpm build:clean && pnpm build:source && pnpm build:assets",
     "build:clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "build:source": "tsc -p tsconfig.build.json",
-    "build:assets": "node -e \"require('fs').cpSync('src','dist/source',{recursive:true,filter:s=>!require('path').extname(s)||/\\.md$/.test(s)})\"",
+    "build:assets": "node -e \"require('fs').cpSync('src','dist/source',{recursive:true,filter:s=>!require('path').extname(s)||/\\.(md|css)$/.test(s)})\"",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "devDependencies": {
+    "@solid-slopkit/components": "^0.1.0",
     "@solidjs/diagnostics": "^2.0.0-rc.13",
     "@solidjs/testing-library": "^1.0.0-beta.3",
     "@solidjs/vite-plugin": "^3.0.0-next.46",
@@ -48,6 +50,7 @@
     "vitest": "^5.0.0"
   },
   "peerDependencies": {
+    "@solid-slopkit/components": "^0.1.0",
     "@solidjs/web": ">=2.0.0-rc.11 <3",
     "solid-js": ">=2.0.0-rc.11 <3"
   }

@@ -1,0 +1,30 @@
+/*
+ * The Flow's stylesheet. Import it after the @solid-slopkit/components stylesheets (ADR 0016).
+ *
+ * Public custom properties (set on the Flow or any ancestor). Each defaults to a components theme token, so a theme
+ * switch restyles the Flow with the rest of the app:
+ *   --slp-flow-background       the Flow's surface
+ *   --slp-flow-pattern-color    Background dots and lines
+ *   --slp-flow-edge-color       Edge lines and markers
+ *   --slp-flow-port-color       Ports
+ *   --slp-flow-selection-color  selected Nodes and Edges, the selection box, a valid Connection target
+ *
+ * Everything prefixed `--_flow-` is internal. Every rule lives in the components' cascade layer, so unlayered app CSS
+ * overrides it.
+ */
+@layer slopkit.reset, slopkit.base, slopkit.themes, slopkit.components, slopkit.utilities;
+
+@layer slopkit.components {
+  .slp-flow {
+    --_flow-background: var(--slp-flow-background, var(--slp-color-base-100));
+    --_flow-pattern-color: var(--slp-flow-pattern-color, var(--slp-color-base-300));
+    --_flow-edge-color: var(--slp-flow-edge-color, var(--slp-color-muted-content));
+    --_flow-port-color: var(--slp-flow-port-color, var(--slp-color-neutral));
+    --_flow-selection-color: var(--slp-flow-selection-color, var(--slp-color-primary));
+
+    position: relative;
+    overflow: hidden;
+    background: var(--_flow-background);
+    color: var(--slp-color-base-content);
+  }
+}

@@ -22,7 +22,18 @@ pnpm add @solid-slopkit/flow @solid-slopkit/components
 
 The package has an index for agents at `node_modules/@solid-slopkit/flow/dist/source/llms.md`, with a reference per area. Read it.
 
-TODO: the wiring that has to happen once, with a minimal example.
+Once, at the app's root: render the app inside `<SlopkitUi>`, the provider of `@solid-slopkit/components`, and load the components' stylesheets, then the Flow's. If the app already uses `@solid-slopkit/components`, only the last import is new.
+
+```tsx
+import { SlopkitUi } from '@solid-slopkit/components';
+import '@solid-slopkit/components/styles/slopkit.css';
+import '@solid-slopkit/components/styles/default-theme.css';
+import '@solid-slopkit/flow/styles/flow.css';
+
+export function Root() {
+  return <SlopkitUi>{/* your app, with its Flows */}</SlopkitUi>;
+}
+```
 
 ## 3. Make the package docs available to later sessions
 

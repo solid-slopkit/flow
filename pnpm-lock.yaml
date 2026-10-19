@@ -89,6 +89,9 @@ importers:
         specifier: '>=2.0.0-rc.11 <3'
         version: 2.0.0-rc.15
     devDependencies:
+      '@solid-slopkit/components':
+        specifier: ^0.1.0
+        version: 0.1.0(@solidjs/web@2.0.0-rc.15)(solid-js@2.0.0-rc.15)
       '@solidjs/diagnostics':
         specifier: ^2.0.0-rc.13
         version: 2.0.0-rc.15(@solidjs/web@2.0.0-rc.15)(solid-js@2.0.0-rc.15)(vitest@5.0.5)

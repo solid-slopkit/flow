@@ -21,7 +21,7 @@
 
 - [x] **F0.01** Package scaffold: `package.json` (the `solid` export condition, ADR 0001), `tsconfig.json` / `tsconfig.build.json`, build and typecheck scripts, a jsdom and a Chromium vitest project, an empty entry, the docs site and the release workflow. `pnpm build`, `test`, `lint` and `format:check` pass from the root.
 
-- [ ] **F0.02** `@solid-slopkit/components` as a peer and dev dependency (ADR 0016): its provider and stylesheet set up in the test setup and the docs site, and flow's own stylesheet in `@layer` reading the components theme's custom properties. Setup steps in `docs/using-slopkit.md` and `src/llms.md`.
+- [x] **F0.02** `@solid-slopkit/components` as a peer and dev dependency (ADR 0016): its provider and stylesheet set up in the test setup and the docs site, and flow's own stylesheet in `@layer` reading the components theme's custom properties. Setup steps in `docs/using-slopkit.md` and `src/llms.md`.
 
 ## F1 — Data model
 
