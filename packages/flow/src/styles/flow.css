@@ -148,6 +148,9 @@
   .slp-flow-node {
     position: absolute;
     inset: 0 auto auto 0;
+    /* The Node layer has no width, so without this a content-sized Node would shrink to its narrowest content. A
+       Declared size is set inline and wins. */
+    width: max-content;
     box-sizing: border-box;
 
     &[data-draggable] {

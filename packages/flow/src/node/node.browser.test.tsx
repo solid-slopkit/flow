@@ -31,6 +31,18 @@ describe('measuring', () => {
     expect(api().measuredSize('a')).toEqual({ width: 140, height: 50 });
   });
 
+  test('a content-sized Node takes its content’s natural width, without wrapping text', async () => {
+    const { nodeElement } = await editor(
+      { nodes: [node('a', 0, 0), node('b', 300, 0, { size: { width: 60, height: 40 } })], edges: [] },
+      { content: () => <span>A label several words long</span> },
+    );
+    const text = nodeElement('a').querySelector('span')!;
+    expect(text.getClientRects()).toHaveLength(1);
+    expect(nodeElement('a').offsetWidth).toBe(Math.ceil(text.getBoundingClientRect().width));
+    // A Declared size still wins.
+    expect(nodeElement('b').offsetWidth).toBe(60);
+  });
+
   test('measures layout size, not the zoomed size', async () => {
     const { api } = await editor({ nodes: [node('a', 0, 0)], edges: [] }, { flow: { defaultViewport: { x: 0, y: 0, zoom: 2 } } });
     expect(api().measuredSize('a')).toEqual({ width: 100, height: 50 });
