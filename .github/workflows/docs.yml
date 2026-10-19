@@ -1,0 +1,53 @@
+# Deploys the docs site to GitHub Pages, at https://solid-slopkit.github.io/flow/, on every push to main. The
+# SSR build is prerendered into static pages (apps/docs/prerender.js), so Pages serves plain files.
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a newer push replaces a queued one but never cancels a deploy in progress.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Pages serves the repo's site under /<repo>/.
+      DOCS_BASE: /flow/
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node from mise.toml; pnpm 12 to match the lockfile.
+      - uses: jdx/mise-action@v2
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+
+      - run: pnpm install --frozen-lockfile
+      # The docs build resolves @solid-slopkit/flow through its exports, which point at dist.
+      - run: pnpm --filter @solid-slopkit/flow build
+      - run: pnpm --filter docs build
+      - run: pnpm --filter docs prerender
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/docs/dist/client
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

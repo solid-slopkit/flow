@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "docs",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "pnpm@12.3.4", "--filter", "docs", "exec", "vite", "--port", "3100", "--strictPort"],
+      "port": 3100,
+      "autoPort": false
+    }
+  ]
+}

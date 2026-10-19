@@ -1,0 +1,48 @@
+/*
+ * Example themes for the docs. They show both kinds ADR 0005 describes: `orange` supports both color schemes
+ * with light-dark(), and `green` supports only light, so it sets color-scheme itself. Tokens a theme leaves out
+ * (shape, status colors) come from the default theme on :root.
+ */
+@layer slopkit.themes {
+  [data-slp-theme='orange'] {
+    --slp-color-base-100: light-dark(#ffffff, #211c18);
+    --slp-color-base-200: light-dark(#f4f7fa, #2b241f);
+    --slp-color-base-300: light-dark(#eaeff4, #3a312a);
+    --slp-color-base-content: light-dark(#2b2118, #e9dccf);
+    --slp-color-muted: light-dark(#f4f7fa, #2b241f);
+    --slp-color-muted-content: light-dark(#6b5d52, #a8998b);
+    --slp-color-primary: light-dark(#fc6f3c, #fc6f3c);
+    --slp-color-primary-content: light-dark(#ffffff, #1f1a17);
+    --slp-color-secondary: light-dark(#c2255c, #f06595);
+    --slp-color-secondary-content: light-dark(#ffffff, #1f1a17);
+    --slp-color-neutral: light-dark(#3a2e25, #4a3d33);
+    --slp-color-neutral-content: #fff4e6;
+  }
+
+  [data-slp-theme='green'] {
+    color-scheme: light;
+
+    --slp-color-base-100: #f6fdf7;
+    --slp-color-base-200: #ebfbee;
+    --slp-color-base-300: #d3f9d8;
+    --slp-color-base-content: #0f2a1a;
+    --slp-color-muted: #ebfbee;
+    --slp-color-muted-content: #3d5c48;
+    --slp-color-primary: #2b8a3e;
+    --slp-color-primary-content: #ffffff;
+    --slp-color-secondary: #087f5b;
+    --slp-color-secondary-content: #ffffff;
+    --slp-color-accent: #c0eb75;
+    --slp-color-accent-content: #0f2a1a;
+    --slp-color-neutral: #1f3a2c;
+    --slp-color-neutral-content: #e6fcf5;
+    --slp-color-info: #0c8599;
+    --slp-color-info-content: #ffffff;
+    --slp-color-success: #2f9e44;
+    --slp-color-success-content: #ffffff;
+    --slp-color-warning: #f59f00;
+    --slp-color-warning-content: #0f2a1a;
+    --slp-color-error: #c92a2a;
+    --slp-color-error-content: #ffffff;
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "slopkit-flow",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter docs dev",
+    "build": "pnpm -r build",
+    "lint": "oxlint apps packages",
+    "test": "pnpm -r --if-present test",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "release:check": "pnpm -r --filter \"./packages/*\" build && pnpm -r --filter \"./packages/*\" exec npm pack --dry-run"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.3",
+    "eslint-plugin-solid": "~0.18.1",
+    "oxfmt": "^0.72.0",
+    "oxlint": "~1.87.0",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": "^22.22.2 || >=24.15.0"
+  }
+}

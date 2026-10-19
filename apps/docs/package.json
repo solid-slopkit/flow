@@ -1,0 +1,36 @@
+{
+  "name": "docs",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "prerender": "node prerender.js",
+    "serve": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@lucide/solid": "^1.52.0",
+    "@solid-slopkit/components": "^0.1.0",
+    "@solid-slopkit/flow": "workspace:*",
+    "@solidjs/meta": "^1.0.0-next.2",
+    "@solidjs/router": "^2.0.0-next.30",
+    "@solidjs/web": "^2.0.0-rc.13",
+    "shiki": "^4.5.0",
+    "solid-js": "^2.0.0-rc.13"
+  },
+  "devDependencies": {
+    "@solidjs/diagnostics": "^2.0.0-rc.13",
+    "@solidjs/testing-library": "^1.0.0-beta.3",
+    "@solidjs/vite-plugin": "^3.0.0-next.46",
+    "@testing-library/jest-dom": "^7.0.0",
+    "filesystem-routing": "0.4.0",
+    "jsdom": "^30.1.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5",
+    "vitest": "^5.0.0"
+  }
+}

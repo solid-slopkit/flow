@@ -1,0 +1,54 @@
+{
+  "name": "@solid-slopkit/flow",
+  "version": "0.0.0",
+  "description": "TODO: one line on what @solid-slopkit/flow does",
+  "homepage": "https://solid-slopkit.github.io/flow/",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/solid-slopkit/flow.git",
+    "directory": "packages/flow"
+  },
+  "files": [
+    "dist",
+    "skills"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "solid": "./dist/source/index.js",
+      "default": "./dist/source/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "pnpm build:clean && pnpm build:source && pnpm build:assets",
+    "build:clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build:source": "tsc -p tsconfig.build.json",
+    "build:assets": "node -e \"require('fs').cpSync('src','dist/source',{recursive:true,filter:s=>!require('path').extname(s)||/\\.md$/.test(s)})\"",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@solidjs/diagnostics": "^2.0.0-rc.13",
+    "@solidjs/testing-library": "^1.0.0-beta.3",
+    "@solidjs/vite-plugin": "^3.0.0-next.46",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@types/node": "^24.0.0",
+    "@vitest/browser-playwright": "^5.0.2",
+    "jsdom": "^30.1.2",
+    "playwright": "^1.63.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5",
+    "vitest": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@solidjs/web": ">=2.0.0-rc.11 <3",
+    "solid-js": ">=2.0.0-rc.11 <3"
+  }
+}

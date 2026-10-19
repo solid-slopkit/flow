@@ -1,0 +1,312 @@
+/* Docs chrome. Colors come from the slopkit theme tokens only. */
+
+:root {
+  --docs-header-height: 3.5rem;
+  --docs-content-width: 48rem;
+  --docs-border: 1px solid var(--slp-color-base-300);
+  --docs-muted: color-mix(in oklab, var(--slp-color-base-content) 60%, transparent);
+  --docs-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--slp-color-base-100);
+  color: var(--slp-color-base-content);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Shell: an AppShell. The header sticks to the top of the main area. */
+
+.docs-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: var(--docs-header-height);
+  padding-inline: 1rem;
+  border-bottom: var(--docs-border);
+  background: var(--slp-color-base-100);
+}
+
+.docs-wordmark {
+  color: inherit;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+/* The sidebar's header lines up with the main area's. */
+.docs-sidebar-header {
+  justify-content: center;
+  height: var(--docs-header-height);
+  padding-inline: 1rem;
+  border-bottom: var(--docs-border);
+}
+
+.docs-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-inline-start: auto;
+}
+
+/* The search opens the docs' command dialog: wide, quiet, its shortcut at the end. */
+.docs-search-button {
+  min-width: 12rem;
+  justify-content: flex-start;
+  color: var(--docs-muted);
+
+  & .docs-search-label {
+    flex: 1;
+    text-align: start;
+  }
+
+  /* Narrow, it's just the icon: there's no room for the rest, nor usually a keyboard. */
+  @media (width < 48em) {
+    min-width: 0;
+
+    & .docs-search-label,
+    & .slp-kbd {
+      display: none;
+    }
+  }
+}
+
+/* Show the icon of the scheme a click switches to. */
+.docs-scheme-icon-dark {
+  display: none;
+}
+
+:root[data-slp-color-scheme='dark'] {
+  & .docs-scheme-icon-light {
+    display: none;
+  }
+
+  & .docs-scheme-icon-dark {
+    display: inline;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-slp-color-scheme='light']) {
+    & .docs-scheme-icon-light {
+      display: none;
+    }
+
+    & .docs-scheme-icon-dark {
+      display: inline;
+    }
+  }
+}
+
+.docs-nav-section [data-slot='app-shell-group-label'] {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.docs-content {
+  padding: 2.5rem 3rem 5rem;
+}
+
+.docs-loading {
+  color: var(--docs-muted);
+}
+
+/* The header shows the wordmark while the sidebar doesn't: collapsed, or a closed drawer below 48em. */
+@media (width >= 48em) {
+  .slp-app-shell:has(> .docs-sidebar[data-state='expanded']) .docs-header-wordmark {
+    display: none;
+  }
+}
+
+@media (width < 48em) {
+  .docs-content {
+    padding: 1.5rem 1rem 4rem;
+  }
+}
+
+/* Page content */
+
+.docs-page {
+  max-width: var(--docs-content-width);
+
+  /* Direct children only, so the page's styles don't leak into component examples. */
+  & > h1 {
+    margin: 0 0 0.5rem;
+    font-size: 2.25rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  & > p {
+    margin: 0 0 1rem;
+  }
+
+  /* Prose links only: example links keep their component's color. */
+  & a:not(.slp-button, .docs-heading a, .docs-example-preview a) {
+    color: var(--slp-color-primary);
+    text-underline-offset: 0.2em;
+  }
+
+  & :not(pre) > code {
+    padding: 0.1em 0.35em;
+    border-radius: 0.25rem;
+    background: var(--slp-color-base-200);
+    font-family: var(--docs-mono);
+    font-size: 0.875em;
+  }
+}
+
+.docs-eyebrow {
+  margin: 0 0 0.25rem !important;
+  color: var(--slp-color-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.docs-lead {
+  color: var(--docs-muted);
+  font-size: 1.125rem;
+}
+
+.docs-heading {
+  margin: 2.5rem 0 1rem;
+  padding-top: 1.5rem;
+  border-top: var(--docs-border);
+  font-size: 1.5rem;
+  line-height: 1.3;
+  scroll-margin-top: calc(var(--docs-header-height) + 1rem);
+
+  & a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  & a:hover::after {
+    content: ' #';
+    color: var(--docs-muted);
+  }
+}
+
+/* Code */
+
+.docs-code {
+  position: relative;
+  margin: 0 0 1.5rem;
+  border: var(--docs-border);
+  border-radius: 0.5rem;
+  background: var(--slp-color-base-200);
+
+  & pre {
+    margin: 0;
+    padding: 1rem 3rem 1rem 1rem;
+    overflow-x: auto;
+    background: transparent !important;
+    font-family: var(--docs-mono);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+  }
+}
+
+.docs-code-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+/* Examples */
+
+.docs-example {
+  margin: 0 0 1.5rem;
+
+  & .docs-code {
+    margin: 0;
+    border-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
+
+.docs-example-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem;
+  border: var(--docs-border);
+  border-radius: 0.5rem 0.5rem 0 0;
+  background: var(--slp-color-base-100);
+
+  &[data-column] {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* Scene examples: a sized, positioned frame for the Canvas, which fills its parent. */
+
+.docs-scene {
+  position: relative;
+  width: 100%;
+  height: 18rem;
+  overflow: clip;
+  border-radius: 0.375rem;
+  background: var(--slp-color-base-200);
+
+  & .docs-scene-fallback {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    color: var(--slp-color-base-content);
+    opacity: 0.6;
+  }
+}
+
+/* Tables */
+
+.docs-table-wrap {
+  margin: 0 0 1.5rem;
+  overflow-x: auto;
+  border: var(--docs-border);
+  border-radius: 0.5rem;
+}
+
+.docs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  & th,
+  & td {
+    padding: 0.625rem 0.875rem;
+    border-bottom: var(--docs-border);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  & th {
+    background: var(--slp-color-base-200);
+    font-weight: 600;
+  }
+
+  & tr:last-child td {
+    border-bottom: 0;
+  }
+
+  & td:first-child code {
+    white-space: nowrap;
+  }
+}
