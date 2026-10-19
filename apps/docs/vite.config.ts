@@ -13,7 +13,14 @@ export default defineConfig({
     slopkitFromSource(),
     // `extensions` makes @solidjs/vite-plugin also compile the `?pick=` route
     // modules the fileRoutes plugin emits (their ids end in a query string).
-    solid({ start: true, ssr: true, extensions: ['.jsx', '.tsx'], diagnostics: true }),
+    // In dev, the server inlines the CSS it finds by crawling the app's modules, but it skips node_modules: the
+    // components' CSS modules would only arrive once the client JS runs, a flash of unstyled content on every reload.
+    solid({
+      start: { css: { filter: { include: /@solid-slopkit\/components/ } } },
+      ssr: true,
+      extensions: ['.jsx', '.tsx'],
+      diagnostics: true,
+    }),
     fileRoutes({ types: true }),
   ],
   server: {
