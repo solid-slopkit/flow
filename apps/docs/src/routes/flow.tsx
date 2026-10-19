@@ -77,6 +77,17 @@ export default function FlowPage() {
             type: 'number',
             description: "The Flow's declared size, used until it is measured, and on the server.",
           },
+          {
+            name: 'aria-label',
+            type: 'string',
+            default: 'messages.flow',
+            description: "The Flow's accessible name (see Accessibility).",
+          },
+          {
+            name: 'messages',
+            type: 'Partial<FlowMessages>',
+            description: 'Replaces any label or announcement the Flow writes for assistive technology.',
+          },
         ]}
       />
       <p>

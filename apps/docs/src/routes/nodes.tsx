@@ -64,6 +64,12 @@ export default function NodesPage() {
             default: 'false',
             description: 'Keep the Node inside its Parent while dragging.',
           },
+          {
+            name: 'aria-label',
+            type: 'string',
+            default: 'its text',
+            description: 'Its name for assistive technology and announcements (see Accessibility).',
+          },
           { name: 'class, style', type: '', description: 'On the Node element, .slp-flow-node.' },
         ]}
       />

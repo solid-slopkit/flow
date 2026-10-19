@@ -48,6 +48,12 @@ export default function EdgesPage() {
             description: 'Which Edge ends it accepts (see Connections).',
           },
           { name: 'max', type: 'number', description: 'The most Edges it accepts. Unlimited by default.' },
+          {
+            name: 'aria-label',
+            type: 'string',
+            default: 'messages.portLabel',
+            description: 'Its name for assistive technology; Enter on it starts a Connection (see Accessibility).',
+          },
         ]}
       />
 
@@ -87,6 +93,12 @@ export default function EdgesPage() {
             type: 'boolean',
             default: 'true',
             description: 'Dragging an end moves it to another Port (see Connections).',
+          },
+          {
+            name: 'aria-label',
+            type: 'string',
+            default: 'messages.edgeLabel',
+            description: 'Its name for assistive technology.',
           },
           { name: 'children', type: 'JSX.Element', description: 'SVG drawn instead of the default line.' },
         ]}
