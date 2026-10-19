@@ -8,14 +8,14 @@ Docs site: https://solid-slopkit.github.io/flow/. It is built from `main` and ca
 
 ## The package
 
-`@solid-slopkit/flow`: TODO, what the package does. It depends on no other `@solid-slopkit` package.
+`@solid-slopkit/flow`: SolidJS 2.x primitives for building node-based editors and interactive diagrams. It builds its controls and look on `@solid-slopkit/components`, a peer dependency the app installs and sets up alongside it (ADR 0016).
 
 It needs `solid-js` and `@solidjs/web` 2.x, which a Solid 2 app already has. It ships uncompiled JSX under the `solid` export condition, so the app compiles it with its own Solid plugin (`@solidjs/vite-plugin`). This needs no configuration.
 
 ## 1. Install
 
 ```bash
-pnpm add @solid-slopkit/flow
+pnpm add @solid-slopkit/flow @solid-slopkit/components
 ```
 
 ## 2. Set it up

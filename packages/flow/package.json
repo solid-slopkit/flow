@@ -1,7 +1,7 @@
 {
   "name": "@solid-slopkit/flow",
   "version": "0.0.0",
-  "description": "TODO: one line on what @solid-slopkit/flow does",
+  "description": "SolidJS 2.x primitives for building node-based editors and interactive diagrams",
   "homepage": "https://solid-slopkit.github.io/flow/",
   "license": "MIT",
   "repository": {

@@ -1,11 +1,11 @@
 # @solid-slopkit/flow
 
-TODO: what the package does, in a paragraph. Each link below is a reference for one area. Paths are relative to this file.
+SolidJS 2.x primitives for building node-based editors and interactive diagrams. The app owns the data (nodes and edges in its store) and renders Nodes as its own JSX; the Flow proposes every edit as a Batch of Changes. Each link below is a reference for one area. Paths are relative to this file.
 
 ## Setup
 
 ```bash
-pnpm add solid-js @solidjs/web @solid-slopkit/flow
+pnpm add solid-js @solidjs/web @solid-slopkit/components @solid-slopkit/flow
 ```
 
 ## API

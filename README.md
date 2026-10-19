@@ -1,6 +1,6 @@
 # slopkit flow
 
-[`@solid-slopkit/flow`](./packages/flow): TODO: one line on what the package does.
+[`@solid-slopkit/flow`](./packages/flow): SolidJS 2.x primitives for building node-based editors and interactive diagrams.
 
 [`apps/docs`](./apps/docs) is the documentation site, published at https://solid-slopkit.github.io/flow/. [AGENTS.md](./AGENTS.md) is the guide for coding agents.
 
@@ -9,7 +9,7 @@
 The package is published to npm (ADR 0001). [docs/using-slopkit.md](./docs/using-slopkit.md) is the setup guide for coding agents: point an agent at it to install and wire up the package in an app. To install by hand:
 
 ```bash
-pnpm add @solid-slopkit/flow
+pnpm add @solid-slopkit/flow @solid-slopkit/components
 ```
 
 ## Developing
