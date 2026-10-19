@@ -2,7 +2,7 @@
 
 [`@solid-slopkit/flow`](./packages/flow): TODO: one line on what the package does.
 
-[`apps/docs`](./apps/docs) is the documentation site, published at https://solid-slopkit.github.io/flow/. [CONTEXT-MAP.md](./CONTEXT-MAP.md) explains how the package relates to the other `@solid-slopkit` packages, and [AGENTS.md](./AGENTS.md) is the guide for coding agents.
+[`apps/docs`](./apps/docs) is the documentation site, published at https://solid-slopkit.github.io/flow/. [AGENTS.md](./AGENTS.md) is the guide for coding agents.
 
 ## Installing
 

@@ -1,6 +1,6 @@
 # @solid-slopkit/flow roadmap to 0.0.1
 
-0.0.1 is the first release. Decisions live in [docs/adr](./adr) (repo-wide ones in [/docs/adr](../../../docs/adr)) and vocabulary in [CONTEXT.md](../CONTEXT.md). Use its terms in code, tests and docs.
+0.0.1 is the first release. Decisions live in [docs/adr](../../../docs/adr) and vocabulary in [CONTEXT.md](../CONTEXT.md). Use its terms in code, tests and docs.
 
 ## Rules for agents
 

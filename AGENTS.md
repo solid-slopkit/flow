@@ -30,9 +30,8 @@ Name your signals/memos/effects (the `{ name: "..." }` option) — attribution r
 
 Read only what your task touches:
 
-- `CONTEXT-MAP.md`: how this package relates to the other `@solid-slopkit` packages, the terms they share, and where repo-wide decisions are. Start here.
-- `packages/flow/CONTEXT.md`: the package's vocabulary. Use its terms in code, docs and replies.
-- `packages/flow/docs/adr/` and `docs/adr/`: architecture decisions for the package and for the whole family. Read the relevant ones before designing something, and don't silently go against one.
+- `packages/flow/CONTEXT.md`: the package's vocabulary. Use its terms in code, docs and replies. Start here.
+- `docs/adr/`: architecture decisions. Read the relevant ones before designing something, and don't silently go against one. A new ADR takes the next free number.
 - `packages/flow/docs/roadmap.md`: the ordered steps to the package's 0.0.1. **Implement only the step you were asked for, by its ID.** Never continue into the next step or a whole milestone on your own.
 
 ## This library stands alone
