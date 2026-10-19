@@ -40,3 +40,16 @@ export function pointOf(element: Element, offset?: ScreenPoint): ScreenPoint {
     ? { x: rect.left + offset.x, y: rect.top + offset.y }
     : { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
 }
+
+const KEY_CODES: Record<string, number> = { Escape: 27, Delete: 46, ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40 };
+
+/** Presses and releases a key on whatever has focus; `modifiers` as CDP counts them (8 is Shift). */
+export async function key(name: string, modifiers = 0) {
+  const event = { key: name, code: name, windowsVirtualKeyCode: KEY_CODES[name], modifiers };
+  await cdp().send('Input.dispatchKeyEvent', { type: 'rawKeyDown', ...event });
+  await cdp().send('Input.dispatchKeyEvent', { type: 'keyUp', ...event });
+  await settle();
+}
+
+/** CDP's modifier bits for mouse and key events. */
+export const SHIFT = 8;

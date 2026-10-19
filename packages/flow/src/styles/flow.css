@@ -38,6 +38,25 @@
       user-select: none;
       cursor: crosshair;
     }
+
+    /* Focusable for the keyboard and the clipboard; the ring shows only for keyboard focus. */
+    &:focus {
+      outline: none;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--_flow-selection-color);
+      outline-offset: -2px;
+    }
+  }
+
+  /* Shift-drag on empty space; drawn in pixels over the Flow, outside the Viewport's transform. */
+  .slp-flow-selection-box {
+    position: absolute;
+    inset: 0 auto auto 0;
+    box-sizing: border-box;
+    border: 1px solid var(--_flow-selection-color);
+    background: color-mix(in srgb, var(--_flow-selection-color) 10%, transparent);
+    pointer-events: none;
   }
 
   /* One transformed box for the Viewport (ADR 0015). It has no size: the layers inside overflow it. */
@@ -80,6 +99,15 @@
   /* Hidden while its end is dragged: the Connection line stands in for it. */
   .slp-flow-edge[data-reconnecting] {
     visibility: hidden;
+  }
+
+  /* A wide invisible line along the Edge that takes clicks, so a thin Edge is easy to select. */
+  .slp-flow-edge-hit {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 12;
+    pointer-events: stroke;
+    cursor: pointer;
   }
 
   /* An invisible handle on each end; under the Nodes, so a press on the Port itself starts a new Connection. */
@@ -275,6 +303,24 @@
       stroke-width: 1px;
       stroke-dasharray: 4 3;
       vector-effect: non-scaling-stroke;
+    }
+  }
+
+  /* A palette entry: dragged with the pointer, following it until it is dropped. */
+  .slp-flow-draggable {
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+
+    &[data-dragging] {
+      position: relative;
+      z-index: 1000;
+      cursor: grabbing;
+      opacity: 0.8;
+    }
+
+    &[data-disabled] {
+      cursor: default;
     }
   }
 }

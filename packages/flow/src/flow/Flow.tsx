@@ -1,10 +1,15 @@
-import { createContext, createMemo, createSignal, createStore, For, onSettled, untrack, useContext } from 'solid-js';
+import { createContext, createMemo, createSignal, createStore, For, onSettled, Show, untrack, useContext } from 'solid-js';
 import type { JSX } from '@solidjs/web';
 
 import type { Batch } from '../changes/changes';
 import { attachConnections, type Connection, type ConnectEnd } from '../connection/connect';
 import { ConnectionLine } from '../connection/ConnectionLine';
 import type { ConnectionRule } from '../connection/rules';
+import { attachClipboard } from '../clipboard/clipboard';
+import type { ClipboardPayload } from '../clipboard/payload';
+import { registerDropTarget } from '../palette/FlowDraggable';
+import { attachKeyboard } from '../selection/keyboard';
+import { attachSelection, type SelectionMode } from '../selection/pointer';
 import { nodeBounds } from '../geometry/geometry';
 import { indexFlow, type FlowIndex } from '../model/flow-index';
 import type { End, FlowNode, FlowState, Point, Rect, Size } from '../model/model';
@@ -78,6 +83,14 @@ export interface FlowProps<N = unknown, E = unknown> {
   connectionRadius?: number;
   /** A new Connection was dropped on empty space, away from any Node: where, in Flow coordinates, and from which Port. */
   onConnectEnd?: (end: ConnectEnd) => void;
+  /** Which Nodes the selection box (Shift-drag on empty space) selects: any it overlaps, or only those wholly inside. Defaults to `partial`. */
+  selectionMode?: SelectionMode;
+  /** Changes what copy and cut write: the selected Nodes, those nested in them and the Edges among them. `undefined` writes nothing. */
+  transformCopy?: (payload: ClipboardPayload<N, E>) => ClipboardPayload<N, E> | undefined;
+  /** Changes what a paste adds, after it has new ids and is placed. `undefined` adds nothing. */
+  transformPaste?: (payload: ClipboardPayload<N, E>) => ClipboardPayload<N, E> | undefined;
+  /** A `<FlowDraggable>` was dropped on the Flow: its `data`, and the drop point in Flow coordinates. */
+  onDrop?: (drop: { data: unknown; position: Point }) => void;
   /** The Flow's declared width in pixels, used until it is measured, and on the server. */
   width?: number;
   /** The Flow's declared height in pixels. */
@@ -201,8 +214,11 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
   // The Ports and Edge a Connection marks, keyed, so only those re-run when it starts, snaps or ends, not on every move.
   const [marks, setMarks] = createStore<Record<keyof ConnectionMarks, Record<string, true>>>({ from: {}, target: {}, edge: {} });
   let marked: ConnectionMarks = { from: undefined, target: undefined, edge: undefined };
+  // Whether there is a Connection, written only when it starts or ends, so a move doesn't reach what reads it.
+  const [connecting, setConnecting] = createSignal(false, { name: 'connecting' });
   const setConnection = (next: Connection | undefined) => {
     setConnectionSignal(next);
+    setConnecting(next !== undefined);
     const keys: ConnectionMarks = { from: endKey(next?.from), target: endKey(next?.to), edge: next?.reconnecting?.edge };
     const kinds = (Object.keys(keys) as (keyof ConnectionMarks)[]).filter((kind) => keys[kind] !== marked[kind]);
     if (!kinds.length) return;
@@ -214,6 +230,13 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
         if (keys[kind] !== undefined) draft[kind][keys[kind]] = true;
       }
     });
+  };
+  const [selectionBox, setSelectionBoxSignal] = createSignal<Rect | undefined>(undefined, { name: 'selectionBox' });
+  // Written only when the box starts or ends, so its moves restyle it alone.
+  const [boxShown, setBoxShown] = createSignal(false, { name: 'selectionBoxShown' });
+  const setSelectionBox = (box: Rect | undefined) => {
+    setSelectionBoxSignal(box);
+    setBoxShown(box !== undefined);
   };
   // Each <Edge> adds its layers while it renders, so this is written from a component body by design.
   const [edgeLayers, setEdgeLayers] = createSignal<readonly EdgeLayers[]>([], { name: 'edgeLayers', ownedWrite: true });
@@ -231,12 +254,19 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
       tryPendingFit();
     },
     measuredPorts: (id) => ports[id],
-    setMeasuredPorts: (id, measured) =>
+    setMeasuredPorts: (id, measured) => {
+      if (
+        samePorts(
+          untrack(() => ports[id], false),
+          measured,
+        )
+      )
+        return;
       setPorts((draft) => {
-        if (samePorts(draft[id], measured)) return;
         if (!measured) delete draft[id];
         else draft[id] = measured;
-      }),
+      });
+    },
     zOrder: (id) => zOrder().get(id) ?? 0,
     nodeOptions: new Map<string, NodeOptions>(),
     portInfo: new Map<string, Map<string, PortInfo>>(),
@@ -262,6 +292,7 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
       return rule === true ? () => true : rule || undefined;
     },
     connection,
+    connecting,
     setConnection,
     connectingFrom: (node, port) => marks.from[endKey({ node, port })!] === true,
     connectionTarget: (node, port) => marks.target[endKey({ node, port })!] === true,
@@ -269,6 +300,11 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
     canConnect: () => props.canConnect,
     connectionRadius: () => props.connectionRadius ?? CONNECTION_RADIUS,
     connectEnd: (end) => props.onConnectEnd?.(end),
+    selectionBox,
+    setSelectionBox,
+    selectionMode: () => props.selectionMode ?? 'partial',
+    transformCopy: (payload) => (props.transformCopy ? props.transformCopy(payload as ClipboardPayload<N, E>) : payload),
+    transformPaste: (payload) => (props.transformPaste ? props.transformPaste(payload as ClipboardPayload<N, E>) : payload),
   };
 
   // Fitting from the declared size happens here, while rendering, so the server sends the fitted Viewport.
@@ -380,15 +416,28 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
       limits: zoomLimits,
       scrollPans: () => props.scrollPans ?? false,
     });
-    const detachConnections = attachConnections(element, api as FlowApi, internals);
+    const connections = attachConnections(element, api as FlowApi, internals);
+    const detachSelection = attachSelection(element, api as FlowApi, internals);
+    const detachKeyboard = attachKeyboard(element, api as FlowApi, connections.cancel);
+    const detachClipboard = attachClipboard(element, api as FlowApi, internals);
+    const unregister = registerDropTarget(element, (data, point) => {
+      if (api.interactive()) props.onDrop?.({ data, position: api.screenToFlow(point) });
+    });
     return () => {
       observer?.disconnect();
       detach();
-      detachConnections();
+      connections.detach();
+      detachSelection();
+      detachKeyboard();
+      detachClipboard();
+      unregister();
     };
   });
 
-  const connecting = createMemo(() => connection() !== undefined, { name: 'connecting' });
+  const boxStyle = (): JSX.CSSProperties => {
+    const box = selectionBox();
+    return box ? { transform: `translate(${box.x}px, ${box.y}px)`, width: `${box.width}px`, height: `${box.height}px` } : {};
+  };
   const transform = () => {
     const { x, y, zoom } = viewport();
     return `translate(${x}px, ${y}px) scale(${zoom})`;
@@ -405,6 +454,7 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
             height: props.height === undefined ? undefined : `${props.height}px`,
             ...props.style,
           }}
+          tabindex="0"
           data-flow-pane
           data-connecting={connecting() ? '' : undefined}
         >
@@ -423,6 +473,9 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
               <For each={guides()}>{(guide) => <line x1={guide.x1} y1={guide.y1} x2={guide.x2} y2={guide.y2} />}</For>
             </svg>
           </div>
+          <Show when={boxShown()}>
+            <div class="slp-flow-selection-box" style={boxStyle()} />
+          </Show>
         </div>
       </FlowInternalsContext>
     </FlowContext>

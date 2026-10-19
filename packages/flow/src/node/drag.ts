@@ -6,6 +6,7 @@ import type { FlowInternals } from '../flow/internals';
 import { absolutePosition, nodeBounds } from '../geometry/geometry';
 import type { FlowIndex } from '../model/flow-index';
 import type { Point, Rect } from '../model/model';
+import { isAncestor } from '../selection/select';
 import { align, contains, keepInside, snapToGrid } from './drag-geometry';
 
 /** How far, in screen pixels, the pointer moves before a press becomes a drag. */
@@ -17,15 +18,6 @@ export const DRAG_THRESHOLD = 3;
  */
 const NO_DRAG =
   'input, textarea, select, option, [contenteditable]:not([contenteditable="false"]), [data-flow-nodrag], [data-flow-port]';
-
-const isAncestor = (index: FlowIndex, ancestor: string, id: string) => {
-  const seen = new Set<string>();
-  for (let parent = index.node(id)?.parent; parent !== undefined && !seen.has(parent); parent = index.node(parent)?.parent) {
-    if (parent === ancestor) return true;
-    seen.add(parent);
-  }
-  return false;
-};
 
 export function attachNodeDrag(
   element: HTMLElement,

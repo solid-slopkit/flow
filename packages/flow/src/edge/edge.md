@@ -33,7 +33,7 @@ import { Edge, Flow, Node, Port } from '@solid-slopkit/flow';
 
 - Each end is placed at its Port: the measured point, else the Port declared in the Node's `ports` (see [ports](../port/port.md)). A Floating end (no `port`) is clipped to its Node's outline toward the other end (see [geometry](../geometry/geometry.md)).
 - Nothing is drawn (the `<g>` is empty, no label) until both ends can be placed: both Nodes have a Measured or Declared size, and every named Port is measured or declared.
-- In an interactive Flow, each end has an invisible handle (`circle.slp-flow-edge-end`) for reconnecting it, drawn whatever the children (see [connections](../connection/connection.md)).
+- In an interactive Flow, a wide invisible line along the Edge (`path.slp-flow-edge-hit`) takes clicks, so a click selects it (see [selection](../selection/selection.md)), and each end has an invisible handle (`circle.slp-flow-edge-end`) for reconnecting it, drawn whatever the children (see [connections](../connection/connection.md)).
 - Attributes: `data-flow-edge` (the id), `data-selected` and `data-reconnecting` (hidden while an end is dragged) on the `<g>`; `data-flow-edge-label` and `data-selected` on the label.
 - Moving a Node redraws only the Edges attached to it.
 - Throws outside a Flow.
@@ -128,4 +128,5 @@ type EdgeMarker = 'arrow' | 'arrow-closed' | { type: 'arrow' | 'arrow-closed'; s
 | `.slp-flow-edge-path`   | `stroke: currentColor`, `stroke-width: 1.5`, no fill                   |
 | `.slp-flow-marker path` | stroked in `currentColor`; `arrow-closed` filled                       |
 | `.slp-flow-edge-label`  | centred on the label point, `white-space: nowrap`                      |
+| `.slp-flow-edge-hit`    | the click line: transparent, 12 wide, `pointer-events: stroke`         |
 | `.slp-flow-edge-end`    | the end handles: transparent, `pointer-events: all`, `cursor: move`    |

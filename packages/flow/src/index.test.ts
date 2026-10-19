@@ -7,6 +7,7 @@ const PUBLIC_API: string[] = [
   'Edge',
   'EdgePath',
   'Flow',
+  'FlowDraggable',
   'Node',
   'NodeResizer',
   'Port',

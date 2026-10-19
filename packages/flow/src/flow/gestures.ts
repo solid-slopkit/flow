@@ -39,6 +39,8 @@ export function attachGestures(root: HTMLElement, flow: GestureTarget): () => vo
   const onPointerDown = (event: PointerEvent) => {
     if (!(event.target instanceof Element) || !event.target.hasAttribute(PANE)) return;
     if (event.pointerType === 'mouse' && event.button !== 0 && event.button !== 1) return;
+    // Shift-dragging empty space draws the selection box instead.
+    if (event.shiftKey && event.button === 0) return;
     if (pointers.size >= 2) return;
     pointers.set(event.pointerId, local(event));
     try {

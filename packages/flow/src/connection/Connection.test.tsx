@@ -197,11 +197,12 @@ describe('connecting', () => {
     expect(asked).toEqual([...once, ...once]);
   });
 
-  test('a press on a Port doesn’t drag its Node; a click without moving does nothing', () => {
+  test('a press on a Port doesn’t drag its Node; a click without moving only selects the Node', () => {
     const { port, drag, batches } = editor();
-    drag(port('a', 'out'), [100, 25], []);
     drag(port('a', 'out'), [100, 25], [[200, 200]]);
     expect(batches).toEqual([]);
+    drag(port('a', 'out'), [100, 25], []);
+    expect(batches).toEqual([{ changes: [{ type: 'select', item: 'node', id: 'a', from: false, to: true }] }]);
   });
 
   test('a cancelled pointer drops the Connection without a Batch', () => {
@@ -248,11 +249,9 @@ describe('connecting', () => {
     expect(artifact).toHaveNoDiagnostics();
     expect(artifact).toStayWithinRerunBudget(0, { scope: /^(node|edge):/ });
     expect(artifact).toStayWithinRerunBudget(0, { scope: 'flowIndex' });
-    // Per move: the preview path, its Show and the root's `connecting` flag; plus the one Port it snaps to.
-    expect(artifact).toStayWithinRerunBudget(11, {
-      scope: 'path.d, path.data-valid',
-    });
-    expect(artifact).toStayWithinRerunBudget(11 * 4 + 1);
+    // Per move: the preview path alone; plus the one Port it snaps to.
+    expect(artifact).toStayWithinRerunBudget(11, { scope: 'path.d, path.data-valid' });
+    expect(artifact).toStayWithinRerunBudget(11 + 1);
   });
 });
 

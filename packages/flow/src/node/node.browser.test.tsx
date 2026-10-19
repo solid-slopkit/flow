@@ -91,10 +91,10 @@ describe('dragging', () => {
     expect(state.nodes[1]!.position).toEqual({ x: 300, y: 0 });
   });
 
-  test('a click is not a drag', async () => {
+  test('a click is not a drag: it only selects', async () => {
     const { nodeElement, batches } = await editor({ nodes: [node('a', 0, 0)], edges: [] });
     await drag(pointOf(nodeElement('a')));
-    expect(batches).toEqual([]);
+    expect(batches).toEqual([{ changes: [{ type: 'select', item: 'node', id: 'a', from: false, to: true }] }]);
   });
 
   test('moves in Flow coordinates at any zoom', async () => {

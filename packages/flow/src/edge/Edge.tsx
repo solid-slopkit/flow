@@ -186,6 +186,9 @@ function EdgeDrawing(props: { edge: EdgeProps; markerId: string }): JSX.Element 
       >
         <Show when={props.edge.markerStart}>{(marker) => <Marker id={`${props.markerId}-start`} marker={marker()} />}</Show>
         <Show when={props.edge.markerEnd}>{(marker) => <Marker id={`${props.markerId}-end`} marker={marker()} />}</Show>
+        <Show when={placed() && flow.interactive()}>
+          <path class="slp-flow-edge-hit" d={edge.geometry()?.d} />
+        </Show>
         <Show when={placed()}>{'children' in props.edge ? props.edge.children : <EdgePath />}</Show>
         <Show when={placed() && reconnectable()}>
           <EdgeEnd end="source" />

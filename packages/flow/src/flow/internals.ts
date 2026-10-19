@@ -5,7 +5,9 @@ import type { JSX } from '@solidjs/web';
 
 import type { Connection, ConnectEnd } from '../connection/connect';
 import type { ConnectionRule } from '../connection/rules';
-import type { FlowNode, Point, PortKind, Side, Size } from '../model/model';
+import type { ClipboardPayload } from '../clipboard/payload';
+import type { SelectionMode } from '../selection/pointer';
+import type { FlowNode, Point, PortKind, Rect, Side, Size } from '../model/model';
 
 /** A Port as measured in the page: its centre relative to its Node's top-left corner, and its side. */
 export type MeasuredPort = Point & { side: Side };
@@ -51,6 +53,8 @@ export interface FlowInternals {
   /** Whether a dragged Node may be dropped into this Parent (`undefined`: top level); `undefined` when off. */
   reparentRule(): ReparentRule | undefined;
   connection(): Connection | undefined;
+  /** Whether there is a Connection; changes only when one starts or ends. */
+  connecting(): boolean;
   setConnection(connection: Connection | undefined): void;
   /** Whether the Connection starts at this Port; changes only when it starts or ends. */
   connectingFrom(node: string, port: string): boolean;
@@ -63,6 +67,14 @@ export interface FlowInternals {
   connectionRadius(): number;
   /** A new Connection was dropped on empty space. */
   connectEnd(end: ConnectEnd): void;
+  /** The selection box being drawn, in pixels from the Flow's top-left corner. */
+  selectionBox(): Rect | undefined;
+  setSelectionBox(box: Rect | undefined): void;
+  selectionMode(): SelectionMode;
+  /** The app's transform of a payload being copied; `undefined` copies nothing. */
+  transformCopy(payload: ClipboardPayload): ClipboardPayload | undefined;
+  /** The app's transform of a payload being pasted; `undefined` pastes nothing. */
+  transformPaste(payload: ClipboardPayload): ClipboardPayload | undefined;
 }
 
 export const FlowInternalsContext = createContext<FlowInternals>(undefined, { name: 'FlowInternals' });

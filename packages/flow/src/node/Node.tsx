@@ -90,7 +90,8 @@ export function Node(props: NodeProps): JSX.Element {
         portElements.delete(port);
         removedPorts.add(port);
         observer?.unobserve(port);
-        measure?.();
+        // Called while the Port is disposed, where state may not be written: measure just after.
+        queueMicrotask(() => measure?.());
       };
     },
     measure: () => measure?.(),
@@ -136,8 +137,13 @@ export function Node(props: NodeProps): JSX.Element {
       observer = undefined;
       measure = undefined;
       detach();
-      internals.setMeasuredSize(name, undefined);
-      internals.setMeasuredPorts(name, undefined);
+      // Disposal is an owned scope, where state may not be written: forget the sizes just after, unless a Node with
+      // the same id has been rendered since.
+      queueMicrotask(() => {
+        if (internals.nodeOptions.has(name)) return;
+        internals.setMeasuredSize(name, undefined);
+        internals.setMeasuredPorts(name, undefined);
+      });
     };
   });
 

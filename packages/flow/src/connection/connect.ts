@@ -45,7 +45,12 @@ const sameEnd = (a: End, b: End) => a.node === b.node && a.port === b.port;
 type Candidate = { end: End; ends: { source: End; target: End } };
 type Reconnecting = { edge: string; end: 'source' | 'target' };
 
-export function attachConnections(root: HTMLElement, flow: FlowApi, internals: FlowInternals): () => void {
+/** Attaches the Connection gesture: `cancel` drops a Connection in progress, `true` when there was one. */
+export function attachConnections(
+  root: HTMLElement,
+  flow: FlowApi,
+  internals: FlowInternals,
+): { detach: () => void; cancel: () => boolean } {
   let gesture:
     | {
         pointer: number;
@@ -234,13 +239,21 @@ export function attachConnections(root: HTMLElement, flow: FlowApi, internals: F
   root.addEventListener('pointerup', onPointerUp);
   root.addEventListener('pointercancel', onPointerCancel);
   root.addEventListener('lostpointercapture', onPointerCancel);
-  return () => {
-    root.removeEventListener('pointerdown', onPointerDown);
-    root.removeEventListener('pointermove', onPointerMove);
-    root.removeEventListener('pointerup', onPointerUp);
-    root.removeEventListener('pointercancel', onPointerCancel);
-    root.removeEventListener('lostpointercapture', onPointerCancel);
-    if (gesture?.started) internals.setConnection(undefined);
+  const cancel = () => {
+    const started = gesture?.started ?? false;
     gesture = undefined;
+    if (started) internals.setConnection(undefined);
+    return started;
+  };
+  return {
+    detach: () => {
+      root.removeEventListener('pointerdown', onPointerDown);
+      root.removeEventListener('pointermove', onPointerMove);
+      root.removeEventListener('pointerup', onPointerUp);
+      root.removeEventListener('pointercancel', onPointerCancel);
+      root.removeEventListener('lostpointercapture', onPointerCancel);
+      cancel();
+    },
+    cancel,
   };
 }

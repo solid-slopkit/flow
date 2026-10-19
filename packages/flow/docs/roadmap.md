@@ -65,11 +65,11 @@ Pure TypeScript, no components yet. Everything here works without a DOM.
 
 ## F6 — Selection and editing
 
-- [ ] **F6.01** Click and modifier-click Selection of Nodes and Edges, clearing on empty space; `select` Batches.
-- [ ] **F6.02** The selection box (Shift-drag), partial or full overlap.
-- [ ] **F6.03** Keyboard: arrow keys move the Selection (Shift for bigger steps), Delete / Backspace removes it, Escape cancels a Connection or clears the Selection.
-- [ ] **F6.04** Copy, cut and paste through the clipboard events (ADR 0022): the payload, new ids, rewritten Edges, placement at the pointer, the app's transforms.
-- [ ] **F6.05** Dragging from a palette: `<FlowDraggable data>`, `onDrop({ data, position })` (ADR 0022).
+- [x] **F6.01** Click and modifier-click Selection of Nodes and Edges, clearing on empty space; `select` Batches.
+- [x] **F6.02** The selection box (Shift-drag), partial or full overlap.
+- [x] **F6.03** Keyboard: arrow keys move the Selection (Shift for bigger steps), Delete / Backspace removes it, Escape cancels a Connection or clears the Selection.
+- [x] **F6.04** Copy, cut and paste through the clipboard events (ADR 0022): the payload, new ids, rewritten Edges, placement at the pointer, the app's transforms.
+- [x] **F6.05** Dragging from a palette: `<FlowDraggable data>`, `onDrop({ data, position })` (ADR 0022).
 
 ## F7 — Accessibility
 

@@ -51,6 +51,9 @@ export { NodeResizer, type NodeResizerProps } from './node/NodeResizer';
 export { Port, type PortProps } from './port/Port';
 export type { Connection, ConnectEnd } from './connection/connect';
 export type { ConnectionRule } from './connection/rules';
+export type { SelectionMode } from './selection/pointer';
+export type { ClipboardPayload } from './clipboard/payload';
+export { FlowDraggable, type FlowDraggableProps } from './palette/FlowDraggable';
 export { Edge, EdgePath, useEdge, type EdgeApi, type EdgeMarker, type EdgeMarkerType, type EdgeProps } from './edge/Edge';
 export {
   bezierShape,

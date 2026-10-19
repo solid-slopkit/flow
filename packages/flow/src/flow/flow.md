@@ -35,6 +35,10 @@ The Flow has no size of its own: give it one with CSS, or with `width` and `heig
 | `canConnect`       | `(source: End, target: End) => boolean` |                           | Whether a Connection may end there, after Port kinds and `max` (see [connections](../connection/connection.md)). |
 | `connectionRadius` | `number`                                | `20`                      | How close, in screen pixels, a Connection snaps to a Port it may end on.                                         |
 | `onConnectEnd`     | `(end: ConnectEnd) => void`             |                           | A new Connection dropped on empty space: its position in Flow coordinates and its starting Port.                 |
+| `selectionMode`    | `'partial' \| 'full'`                   | `'partial'`               | Which Nodes the selection box takes (see [selection](../selection/selection.md)).                                |
+| `transformCopy`    | `(payload) => payload \| undefined`     |                           | Changes what copy and cut write (see [clipboard](../clipboard/clipboard.md)).                                    |
+| `transformPaste`   | `(payload) => payload \| undefined`     |                           | Changes what a paste adds.                                                                                       |
+| `onDrop`           | `(drop: { data, position }) => void`    |                           | A `<FlowDraggable>` dropped on the Flow (see [palette](../palette/palette.md)).                                  |
 | `width`, `height`  | `number`                                |                           | The Flow's declared size in pixels: set on the element, used until it is measured, and on the server.            |
 | `class`, `style`   |                                         |                           | On the Flow's root element (`.slp-flow`).                                                                        |
 | `children`         | `JSX.Element`                           |                           | Rendered in the Node layer; `<Edge>`s draw into the Edge and label layers (see [edges](../edge/edge.md)).        |
@@ -51,9 +55,10 @@ A point `p` in Flow coordinates is drawn at `p * zoom + (x, y)` from the Flow's 
 
 Built on Pointer Events with pointer capture, so mouse, pen and touch share one path.
 
-- Dragging empty space (primary or middle mouse button, one finger) pans. A drag that starts on content in the Flow doesn't. While panning, the root has `data-panning`.
+- Dragging empty space (primary or middle mouse button, one finger) pans; Shift-dragging it draws the selection box instead. A drag that starts on content in the Flow doesn't. While panning, the root has `data-panning`.
 - The wheel zooms around the pointer; with `scrollPans` it pans and Ctrl + wheel zooms. A trackpad pinch arrives as Ctrl + wheel. The wheel never scrolls the page while over the Flow.
 - Two fingers pinch: zoom by their spread around their midpoint, and pan with the midpoint.
+- Clicks select, and a focused Flow takes the keyboard and the clipboard: the root has `tabindex="0"` (see [selection](../selection/selection.md) and [clipboard](../clipboard/clipboard.md)).
 - Dragging from a Port, or from an Edge's end, is a Connection (see [connections](../connection/connection.md)). While it lasts, the root has `data-connecting`.
 
 ## `useFlow()`
@@ -108,4 +113,5 @@ The Flow renders on the server with its layers and the app's children. With `fit
     .slp-flow-labels       the Edge label layer, above the Nodes: each .slp-flow-edge-label
     svg.slp-flow-connection  the preview line of a Connection being dragged
     svg.slp-flow-guides    alignment guides while dragging
+  .slp-flow-selection-box  the selection box, in pixels over the Flow
 ```
