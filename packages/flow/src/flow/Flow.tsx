@@ -1,5 +1,6 @@
 import { VisuallyHidden } from '@solid-slopkit/components';
 import {
+  children,
   createContext,
   createMemo,
   createSignal,
@@ -517,47 +518,57 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
 
   const instructions = createUniqueId();
 
+  // The app's children render first, so each <Edge> has added its layers before the Edge and label layers are drawn:
+  // the server writes each layer once, in order (ADR 0019).
+  const Surface = (): JSX.Element => {
+    const content = children(() => props.children);
+    untrack(content);
+    return (
+      <div
+        ref={(element) => (root = element)}
+        class={props.class ? `slp-flow ${props.class}` : 'slp-flow'}
+        style={{
+          width: props.width === undefined ? undefined : `${props.width}px`,
+          height: props.height === undefined ? undefined : `${props.height}px`,
+          ...props.style,
+        }}
+        tabindex="0"
+        role="application"
+        aria-label={props['aria-label'] ?? messages().flow}
+        aria-describedby={instructions}
+        data-flow-pane
+        data-connecting={connecting() ? '' : undefined}
+      >
+        <div class="slp-flow-viewport" style={{ transform: transform() }} data-flow-pane>
+          <svg class="slp-flow-edges" data-flow-pane>
+            <For each={edgeLayers()}>{(layers) => layers.path}</For>
+          </svg>
+          <div class="slp-flow-nodes" data-flow-pane>
+            {content()}
+          </div>
+          <div class="slp-flow-labels" data-flow-pane>
+            <For each={edgeLayers()}>{(layers) => layers.label}</For>
+          </div>
+          <ConnectionLine />
+          <svg class="slp-flow-guides" data-flow-pane>
+            <For each={guides()}>{(guide) => <line x1={guide.x1} y1={guide.y1} x2={guide.x2} y2={guide.y2} />}</For>
+          </svg>
+        </div>
+        <Show when={boxShown()}>
+          <div class="slp-flow-selection-box" style={boxStyle()} />
+        </Show>
+        <VisuallyHidden id={instructions}>{messages().instructions}</VisuallyHidden>
+        <VisuallyHidden as="div" class="slp-flow-live" role="status" aria-live="polite">
+          {spoken()}
+        </VisuallyHidden>
+      </div>
+    );
+  };
+
   return (
     <FlowContext value={api}>
       <FlowInternalsContext value={internals}>
-        <div
-          ref={(element) => (root = element)}
-          class={props.class ? `slp-flow ${props.class}` : 'slp-flow'}
-          style={{
-            width: props.width === undefined ? undefined : `${props.width}px`,
-            height: props.height === undefined ? undefined : `${props.height}px`,
-            ...props.style,
-          }}
-          tabindex="0"
-          role="application"
-          aria-label={props['aria-label'] ?? messages().flow}
-          aria-describedby={instructions}
-          data-flow-pane
-          data-connecting={connecting() ? '' : undefined}
-        >
-          <div class="slp-flow-viewport" style={{ transform: transform() }} data-flow-pane>
-            <svg class="slp-flow-edges" data-flow-pane>
-              <For each={edgeLayers()}>{(layers) => layers.path}</For>
-            </svg>
-            <div class="slp-flow-nodes" data-flow-pane>
-              {props.children}
-            </div>
-            <div class="slp-flow-labels" data-flow-pane>
-              <For each={edgeLayers()}>{(layers) => layers.label}</For>
-            </div>
-            <ConnectionLine />
-            <svg class="slp-flow-guides" data-flow-pane>
-              <For each={guides()}>{(guide) => <line x1={guide.x1} y1={guide.y1} x2={guide.x2} y2={guide.y2} />}</For>
-            </svg>
-          </div>
-          <Show when={boxShown()}>
-            <div class="slp-flow-selection-box" style={boxStyle()} />
-          </Show>
-          <VisuallyHidden id={instructions}>{messages().instructions}</VisuallyHidden>
-          <VisuallyHidden as="div" class="slp-flow-live" role="status" aria-live="polite">
-            {spoken()}
-          </VisuallyHidden>
-        </div>
+        <Surface />
       </FlowInternalsContext>
     </FlowContext>
   );

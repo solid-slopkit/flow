@@ -103,7 +103,42 @@ function ZoomButtons() {
 
 ## Server rendering
 
-The Flow renders on the server with its layers and the app's children. With `fitView` plus `width` and `height`, the fitted Viewport is computed while rendering, from the Nodes' Declared sizes, so the server sends it. Otherwise `fitView` runs on the client as the Flow and its Nodes are measured, until every Node has a size, unless the Viewport is moved first.
+The Flow renders on the server and hydrates in the browser (ADR 0019). Nothing reads `window` or measures while rendering: geometry uses the Measured size where there is one, else the Declared one.
+
+- Every Node renders at its position, sized by its Declared `size` if it has one.
+- An Edge is drawn on the server when both its ends can be placed from the data: the Nodes at both ends have a Declared `size`, and every Port it names is declared in its Node's `ports` (`side`, optional `offset`). A Floating end needs no Port. Its label is drawn with it.
+- Any other Edge renders as an empty `g.slp-flow-edge` and is drawn in the browser once its Nodes and Ports are measured.
+- With `fitView` plus `width` and `height`, the fitted Viewport is computed while rendering, from the Nodes' Declared sizes, so the server sends it and the browser starts from the same one. Otherwise `fitView` runs in the browser as the Flow and its Nodes are measured, until every Node has a size, unless the Viewport is moved first.
+
+In the browser the Flow measures its Nodes and Ports as usual, and the measurements replace the declared values. A diagram that declares everything renders in full without a browser:
+
+```tsx
+const size = { width: 120, height: 40 };
+const ports: PortSpec[] = [
+  { id: 'in', side: 'left' },
+  { id: 'out', side: 'right' },
+];
+const state: FlowState = {
+  nodes: [
+    { id: 'a', position: { x: 0, y: 0 }, size, ports, data: null },
+    { id: 'b', position: { x: 200, y: 0 }, size, ports, data: null },
+  ],
+  edges: [{ id: 'ab', source: { node: 'a', port: 'out' }, target: { node: 'b', port: 'in' }, data: null }],
+};
+
+<Flow state={state} width={640} height={320} fitView>
+  <For each={state.nodes}>
+    {(node) => (
+      <Node id={node.id}>
+        <Port id="in" />
+        {node.id}
+        <Port id="out" />
+      </Node>
+    )}
+  </For>
+  <For each={state.edges}>{(edge) => <Edge id={edge.id} />}</For>
+</Flow>;
+```
 
 ## Structure and styling
 

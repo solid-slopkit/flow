@@ -28,6 +28,7 @@ export const nav: NavSection[] = [
       { title: 'Connections', href: '/connections' },
       { title: 'Selection and editing', href: '/editing' },
       { title: 'Accessibility', href: '/accessibility' },
+      { title: 'Server rendering', href: '/server-rendering' },
     ],
   },
 ];

@@ -33,7 +33,7 @@ import { Edge, Flow, Node, Port } from '@solid-slopkit/flow';
 | `children`                 | `JSX.Element`                | SVG drawn instead of the default `<EdgePath />`: a custom Edge (see below).     |
 
 - Each end is placed at its Port: the measured point, else the Port declared in the Node's `ports` (see [ports](../port/port.md)). A Floating end (no `port`) is clipped to its Node's outline toward the other end (see [geometry](../geometry/geometry.md)).
-- Nothing is drawn (the `<g>` is empty, no label) until both ends can be placed: both Nodes have a Measured or Declared size, and every named Port is measured or declared.
+- Nothing is drawn (the `<g>` is empty, no label) until both ends can be placed: both Nodes have a Measured or Declared size, and every named Port is measured or declared. On the server only the declared ones exist (see [server rendering](../flow/flow.md#server-rendering)).
 - In an interactive Flow, a wide invisible line along the Edge (`path.slp-flow-edge-hit`) takes clicks, so a click selects it (see [selection](../selection/selection.md)), and each end has an invisible handle (`circle.slp-flow-edge-end`) for reconnecting it, drawn whatever the children (see [connections](../connection/connection.md)).
 - Attributes: `data-flow-edge` (the id), `data-selected` and `data-reconnecting` (hidden while an end is dragged) on the `<g>`; `data-flow-edge-label` and `data-selected` on the label.
 - Moving a Node redraws only the Edges attached to it.

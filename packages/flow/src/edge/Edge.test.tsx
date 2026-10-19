@@ -115,6 +115,14 @@ describe('<Edge>', () => {
     expect(() => render(() => <Edge id="ab" />)).toThrow();
   });
 
+  test('mounting draws each Edge once, from the declared geometry', async () => {
+    const { result, artifact } = await captureArtifact(() => editor(), { scenario: 'mount' });
+    expect(result.path('ab')).toBe('M 100 25 L 300 25');
+    expect(result.root().querySelectorAll('svg.slp-flow-edges > g')).toHaveLength(2);
+    expect(artifact).toHaveNoDiagnostics();
+    expect(artifact).toStayWithinRerunBudget(0, { scope: /^edge:/ });
+  });
+
   test('moving a Node redraws only its Edges', async () => {
     const { setState, path } = editor();
     const { artifact } = await captureArtifact(

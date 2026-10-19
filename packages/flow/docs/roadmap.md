@@ -79,7 +79,7 @@ Pure TypeScript, no components yet. Everything here works without a DOM.
 
 ## F8 — Server rendering
 
-- [ ] **F8.01** The Flow renders on the server and hydrates: Nodes always, Edges whose ends have declared geometry (ADR 0019); the docs site prerenders a full diagram.
+- [x] **F8.01** The Flow renders on the server and hydrates: Nodes always, Edges whose ends have declared geometry (ADR 0019); the docs site prerenders a full diagram.
 
 ## F9 — Built-in UI
 
