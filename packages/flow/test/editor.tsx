@@ -18,6 +18,8 @@ export interface EditorOptions {
   edge?: (edge: FlowEdge) => Partial<EdgeProps>;
   /** Apply Batches to the store (default) or only record them. */
   apply?: boolean;
+  /** More children of the Flow, after the Nodes and Edges, such as built-in UI. */
+  children?: () => JSX.Element;
 }
 
 export function renderEditor(initial: FlowState, options: EditorOptions = {}) {
@@ -47,6 +49,7 @@ export function renderEditor(initial: FlowState, options: EditorOptions = {}) {
         )}
       </For>
       <For each={state.edges}>{(edge) => <Edge id={edge.id} {...options.edge?.(edge)} />}</For>
+      {options.children?.()}
     </Flow>
   ));
   const nodeElement = (id: string) => result.container.querySelector<HTMLElement>(`[data-flow-node="${id}"]`)!;

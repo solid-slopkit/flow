@@ -4,6 +4,7 @@ import { keepFocus } from '../accessibility/focus';
 import { removal } from '../changes/apply';
 import type { Change } from '../changes/changes';
 import type { FlowApi } from '../flow/Flow';
+import { PANEL } from '../flow/gestures';
 import { selectedIds, selectionChanges, topmost } from './select';
 
 /** Keys typed here belong to the field, not the Flow. */
@@ -24,7 +25,7 @@ export function attachKeyboard(root: HTMLElement, flow: FlowApi, cancelConnectio
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.defaultPrevented || event.altKey || event.metaKey || event.ctrlKey) return;
     const target = event.target instanceof Element ? event.target : undefined;
-    if (target?.closest(EDITABLE)) return;
+    if (target?.closest(`${EDITABLE}, ${PANEL}`)) return;
     const state = flow.state();
 
     if (event.key === 'Escape') {

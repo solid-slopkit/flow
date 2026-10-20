@@ -14,6 +14,9 @@ export interface GestureTarget {
 /** Elements of the Flow itself, not content in it: a gesture starting on one of these pans. */
 export const PANE = 'data-flow-pane';
 
+/** Built-in UI over the Flow (Controls, a MiniMap): its pointer, keys and clipboard events are its own. */
+export const PANEL = '[data-flow-panel]';
+
 const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 const midpoint = (a: Point, b: Point): Point => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 

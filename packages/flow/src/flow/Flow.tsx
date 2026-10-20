@@ -131,7 +131,11 @@ export interface FlowApi<N = unknown, E = unknown> {
   /** Sends a Batch to the app's `onChange`; dropped when the Flow isn't interactive. */
   emit(batch: Batch<N, E>): void;
   createId(): string;
+  /** Whether the Flow sends Batches: its `interactive` prop, and not locked. */
   interactive(): boolean;
+  /** Whether editing is locked, as by the lock button of `<Controls>`. The Flow's own state; it starts unlocked. */
+  locked(): boolean;
+  setLocked(locked: boolean): void;
   viewport(): Viewport;
   setViewport(viewport: Viewport): void;
   /** Zooms (within the limits) around a screen point, by default the Flow's centre. */
@@ -276,6 +280,15 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
   };
   // Each <Edge> adds its layers while it renders, so this is written from a component body by design.
   const [edgeLayers, setEdgeLayers] = createSignal<readonly EdgeLayers[]>([], { name: 'edgeLayers', ownedWrite: true });
+  // Built-in UI adds its element the same way, while it renders.
+  const [backgroundLayer, setBackgroundLayer] = createSignal<readonly JSX.Element[]>([], {
+    name: 'backgroundLayer',
+    ownedWrite: true,
+  });
+  const [panelLayer, setPanelLayer] = createSignal<readonly JSX.Element[]>([], { name: 'panelLayer', ownedWrite: true });
+  const layers = { background: [backgroundLayer, setBackgroundLayer], panel: [panelLayer, setPanelLayer] } as const;
+  const [locked, setLocked] = createSignal(false, { name: 'locked' });
+  const interactive = () => (props.interactive ?? true) && !locked();
   const internals: FlowInternals = {
     measuredSize,
     setMeasuredSize: (id, size) => {
@@ -319,6 +332,9 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
     edgeLayers,
     addEdgeLayers: (layers) => setEdgeLayers((list) => [...list, layers]),
     removeEdgeLayers: (layers) => setEdgeLayers((list) => list.filter((entry) => entry !== layers)),
+    layer: (layer) => layers[layer][0](),
+    addToLayer: (layer, element) => layers[layer][1]((list) => [...list, element]),
+    removeFromLayer: (layer, element) => layers[layer][1]((list) => list.filter((entry) => entry !== element)),
     dragging: (id) => dragging().has(id),
     setDragging,
     dropTarget,
@@ -426,12 +442,14 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
     state: () => props.state,
     index,
     emit: (batch) => {
-      if (!(props.interactive ?? true)) return;
+      if (!interactive()) return;
       announceBatch(batch);
       props.onChange?.(batch);
     },
     createId: () => (props.createId ?? (() => crypto.randomUUID()))(),
-    interactive: () => props.interactive ?? true,
+    interactive,
+    locked,
+    setLocked: (next) => setLocked(next),
     viewport,
     setViewport,
     zoomTo,
@@ -518,8 +536,8 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
 
   const instructions = createUniqueId();
 
-  // The app's children render first, so each <Edge> has added its layers before the Edge and label layers are drawn:
-  // the server writes each layer once, in order (ADR 0019).
+  // The app's children render first, so each <Edge> and each piece of built-in UI has added what it draws before the
+  // layers are drawn: the server writes each layer once, in order (ADR 0019).
   const Surface = (): JSX.Element => {
     const content = children(() => props.children);
     untrack(content);
@@ -539,6 +557,7 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
         data-flow-pane
         data-connecting={connecting() ? '' : undefined}
       >
+        <For each={backgroundLayer()}>{(element) => element}</For>
         <div class="slp-flow-viewport" style={{ transform: transform() }} data-flow-pane>
           <svg class="slp-flow-edges" data-flow-pane>
             <For each={edgeLayers()}>{(layers) => layers.path}</For>
@@ -557,6 +576,7 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
         <Show when={boxShown()}>
           <div class="slp-flow-selection-box" style={boxStyle()} />
         </Show>
+        <For each={panelLayer()}>{(element) => element}</For>
         <VisuallyHidden id={instructions}>{messages().instructions}</VisuallyHidden>
         <VisuallyHidden as="div" class="slp-flow-live" role="status" aria-live="polite">
           {spoken()}

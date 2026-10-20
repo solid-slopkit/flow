@@ -1,8 +1,10 @@
 // Keyboard focus inside a Flow. The Flow's root is its one stop in the page's Tab order; inside it, Tab and Shift+Tab
 // rove over the Nodes (each followed by what can take focus inside it: its Ports and the app's own controls, in page
-// order) and then the Edges, in spatial order. Space or Enter selects the focused Node or Edge.
+// order), then the Edges, in spatial order, then the built-in UI over the Flow (Controls, a MiniMap). Space or Enter
+// selects the focused Node or Edge.
 import type { RemoveChange } from '../changes/changes';
 import type { FlowApi } from '../flow/Flow';
+import { PANEL } from '../flow/gestures';
 import { additive } from '../selection/pointer';
 import { selectedIds, selectionChanges } from '../selection/select';
 import { edgeOrder, spatialOrder } from './order';
@@ -47,6 +49,10 @@ export function focusOrder(root: HTMLElement, flow: FlowApi): (HTMLElement | SVG
   for (const id of edgeOrder(state, nodes)) {
     const element = edgeElements.get(id);
     if (element) order.push(element);
+  }
+  for (const panel of root.querySelectorAll(PANEL)) {
+    if (!ownedBy(root, panel)) continue;
+    for (const inner of panel.querySelectorAll(FOCUSABLE)) if (tabbable(inner)) order.push(inner);
   }
   return order;
 }

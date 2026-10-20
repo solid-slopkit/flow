@@ -25,13 +25,16 @@ export function Root() {
 
 `styles/flow.css` puts every rule in the components' `slopkit.components` cascade layer, so unlayered app CSS overrides it. Its colors default to the components theme's tokens, so the Flow follows the app's theme and color scheme. Set these on the Flow or any ancestor to change one:
 
-| Variable                     | Default                     | What it colors                                              |
-| ---------------------------- | --------------------------- | ----------------------------------------------------------- |
-| `--slp-flow-background`      | `--slp-color-base-100`      | the Flow's surface                                          |
-| `--slp-flow-pattern-color`   | `--slp-color-base-300`      | Background dots and lines                                   |
-| `--slp-flow-edge-color`      | `--slp-color-muted-content` | Edge lines and markers                                      |
-| `--slp-flow-port-color`      | `--slp-color-neutral`       | Ports                                                       |
-| `--slp-flow-selection-color` | `--slp-color-primary`       | the Selection, the selection box, a valid Connection target |
+| Variable                        | Default                          | What it colors                                              |
+| ------------------------------- | -------------------------------- | ----------------------------------------------------------- |
+| `--slp-flow-background`         | `--slp-color-base-100`           | the Flow's surface                                          |
+| `--slp-flow-pattern-color`      | `--slp-color-base-300`           | Background dots and lines                                   |
+| `--slp-flow-edge-color`         | `--slp-color-muted-content`      | Edge lines and markers                                      |
+| `--slp-flow-port-color`         | `--slp-color-neutral`            | Ports                                                       |
+| `--slp-flow-selection-color`    | `--slp-color-primary`            | the Selection, the selection box, a valid Connection target |
+| `--slp-flow-panel-background`   | `--slp-color-base-100`           | Controls and the MiniMap                                    |
+| `--slp-flow-minimap-node-color` | `--slp-color-base-300`           | Nodes in the MiniMap                                        |
+| `--slp-flow-minimap-mask-color` | `--slp-color-base-content` at 8% | the MiniMap outside the visible area                        |
 
 ## API
 
@@ -45,6 +48,7 @@ The data model, Changes and History are plain TypeScript and work without a DOM.
 - Accessibility: `FlowMessages`; the Flow's `messages` and `aria-label`, and `aria-label` on `<Node>`, `<Port>` and `<Edge>`.
 - Clipboard: `ClipboardPayload`; the Flow's `transformCopy` and `transformPaste`.
 - Palette: `FlowDraggable`, `FlowDraggableProps`; the Flow's `onDrop`.
+- Built-in UI: `Background`, `BackgroundProps`, `BackgroundVariant`, `Controls`, `ControlsProps`, `MiniMap`, `MiniMapProps`, `PanelPosition`; `useFlow().locked()` and `setLocked`.
 - Edges: `Edge`, `useEdge`, `EdgePath`, `EdgeMarker`; shapes `bezierShape`, `straightShape`, `stepShape`, `smoothStepShape`, `edgeShapes`, `EdgeShape`, `EdgeGeometry`, `EdgeShapeContext`.
 - Records: `FlowState`, `FlowNode`, `FlowEdge`, `End`, `PortSpec`, `Side`, `PortKind`, `EdgeShapeName`, `Point`, `Size`, `Rect`; `indexFlow` for lookups by id.
 - Geometry: `absolutePosition`, `nodeBounds`, `portPoint`, `floatingPoint`, `edgeEnds`, `MeasuredSizes`, `MeasuredPorts`.
@@ -62,6 +66,7 @@ The data model, Changes and History are plain TypeScript and work without a DOM.
 - [Accessibility](accessibility/accessibility.md): roles and names, focus in spatial order, connecting from the keyboard, the live region, `messages`.
 - [Copy, cut and paste](clipboard/clipboard.md): the clipboard events, the payload, new ids, placement, transforms.
 - [Dragging from a palette](palette/palette.md): `<FlowDraggable>` and the Flow's `onDrop`.
+- [Built-in UI](ui/ui.md): `<Background>`, `<Controls>` (zoom, fit view, lock editing), `<MiniMap>`, and how panels take their own input.
 - [Data model](model/model.md): `FlowState` and its records, `indexFlow`.
 - [Geometry](geometry/geometry.md): absolute positions, Node bounds, Port points, Floating ends.
 - [Changes and Batches](changes/changes.md): every Change, phases, `invert`, `applyChanges`, `removal`.

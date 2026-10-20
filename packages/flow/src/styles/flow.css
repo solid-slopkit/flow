@@ -8,6 +8,9 @@
  *   --slp-flow-edge-color       Edge lines and markers
  *   --slp-flow-port-color       Ports
  *   --slp-flow-selection-color  selected Nodes and Edges, the selection box, a valid Connection target
+ *   --slp-flow-panel-background Controls and the MiniMap
+ *   --slp-flow-minimap-node-color  Nodes in the MiniMap
+ *   --slp-flow-minimap-mask-color  the MiniMap outside the visible area
  *
  * Everything prefixed `--_flow-` is internal. Every rule lives in the components' cascade layer, so unlayered app CSS
  * overrides it.
@@ -21,6 +24,12 @@
     --_flow-edge-color: var(--slp-flow-edge-color, var(--slp-color-muted-content));
     --_flow-port-color: var(--slp-flow-port-color, var(--slp-color-neutral));
     --_flow-selection-color: var(--slp-flow-selection-color, var(--slp-color-primary));
+    --_flow-panel-background: var(--slp-flow-panel-background, var(--slp-color-base-100));
+    --_flow-minimap-node-color: var(--slp-flow-minimap-node-color, var(--slp-color-base-300));
+    --_flow-minimap-mask-color: var(
+      --slp-flow-minimap-mask-color,
+      color-mix(in srgb, var(--slp-color-base-content) 8%, transparent)
+    );
 
     position: relative;
     /* Clipped, not hidden: focusing a Node out of sight must not scroll the Flow's content, only pan the Viewport. */
@@ -359,5 +368,104 @@
     &[data-disabled] {
       cursor: default;
     }
+  }
+
+  /* A Background fills the Flow under the Viewport; empty space still takes the gestures, on the root under it. */
+  .slp-flow-background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    color: var(--_flow-pattern-color);
+
+    & circle {
+      fill: currentColor;
+    }
+    & path {
+      fill: none;
+      stroke: currentColor;
+    }
+  }
+
+  /* Controls and the MiniMap: over the Viewport, in a corner. */
+  .slp-flow-panel {
+    position: absolute;
+    z-index: 5;
+    margin: calc(var(--slp-spacing) * 3);
+    border: 1px solid var(--slp-color-base-300);
+    border-radius: 0.5rem;
+    background: var(--_flow-panel-background);
+    box-shadow: var(--slp-shadow-sm);
+    cursor: default;
+
+    &[data-position='top-left'] {
+      top: 0;
+      left: 0;
+    }
+    &[data-position='top-right'] {
+      top: 0;
+      right: 0;
+    }
+    &[data-position='bottom-left'] {
+      bottom: 0;
+      left: 0;
+    }
+    &[data-position='bottom-right'] {
+      right: 0;
+      bottom: 0;
+    }
+  }
+
+  .slp-flow-controls {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--slp-spacing) * 0.5);
+    padding: calc(var(--slp-spacing) * 0.5);
+
+    &[data-orientation='horizontal'] {
+      flex-direction: row;
+    }
+  }
+
+  .slp-flow-icon {
+    display: block;
+  }
+
+  .slp-flow-minimap {
+    overflow: hidden;
+
+    & svg {
+      display: block;
+      touch-action: none;
+    }
+    & svg[data-pannable] {
+      cursor: grab;
+    }
+    & svg:focus {
+      outline: none;
+    }
+    & svg:focus-visible {
+      outline: 2px solid var(--_flow-selection-color);
+      outline-offset: -2px;
+    }
+  }
+
+  .slp-flow-minimap-node {
+    fill: var(--_flow-minimap-node-color);
+
+    &[data-selected] {
+      fill: color-mix(in srgb, var(--_flow-selection-color) 60%, var(--_flow-minimap-node-color));
+    }
+  }
+
+  .slp-flow-minimap-mask {
+    fill: var(--_flow-minimap-mask-color);
+  }
+
+  .slp-flow-minimap-view {
+    fill: none;
+    stroke: var(--_flow-selection-color);
+    stroke-width: 1.5;
   }
 }

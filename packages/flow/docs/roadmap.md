@@ -85,9 +85,9 @@ Pure TypeScript, no components yet. Everything here works without a DOM.
 
 Built from `@solid-slopkit/components` (ADR 0016).
 
-- [ ] **F9.01** `<Background>`: dots, lines and crosses, following the Viewport.
-- [ ] **F9.02** `<Controls>`: zoom in, zoom out, fit view, lock interaction.
-- [ ] **F9.03** `<MiniMap>`: the Nodes and the visible area, panning and zooming by dragging and clicking in it.
+- [x] **F9.01** `<Background>`: dots, lines and crosses, following the Viewport.
+- [x] **F9.02** `<Controls>`: zoom in, zoom out, fit view, lock interaction.
+- [x] **F9.03** `<MiniMap>`: the Nodes and the visible area, panning and zooming by dragging and clicking in it.
 
 ## F10 — Routing
 

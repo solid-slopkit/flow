@@ -4,10 +4,13 @@ import * as flow from './index';
 
 // The public runtime surface, pinned: adding or removing an export is a deliberate change.
 const PUBLIC_API: string[] = [
+  'Background',
+  'Controls',
   'Edge',
   'EdgePath',
   'Flow',
   'FlowDraggable',
+  'MiniMap',
   'Node',
   'NodeResizer',
   'Port',

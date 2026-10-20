@@ -31,6 +31,15 @@ export interface FlowMessages {
   connecting(connection: { port: string; node: string; targets: number }): string;
   /** A Connection was cancelled from the keyboard. */
   connectionCancelled: string;
+  /** The names of `<Controls>` and its buttons. The lock button is a toggle, pressed while editing is locked. */
+  controls: string;
+  zoomIn: string;
+  zoomOut: string;
+  fitView: string;
+  lock: string;
+  /** The name of a `<MiniMap>`, and how its keyboard works, read as its description. */
+  miniMap: string;
+  miniMapInstructions: string;
 }
 
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
@@ -76,4 +85,11 @@ export const defaultMessages: FlowMessages = {
       ? `Connecting from ${port} on ${node}. ${plural(targets, 'port', 'ports')} to connect to: Tab to one and press Enter, or Escape to cancel.`
       : `Connecting from ${port} on ${node}. No port to connect to: press Escape to cancel.`,
   connectionCancelled: 'Connection cancelled',
+  controls: 'Flow controls',
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
+  fitView: 'Fit view',
+  lock: 'Lock editing',
+  miniMap: 'Mini map',
+  miniMapInstructions: 'Arrow keys pan the view. Plus and minus zoom in and out.',
 };

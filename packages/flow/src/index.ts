@@ -66,3 +66,7 @@ export {
   type EdgeShape,
   type EdgeShapeContext,
 } from './edge/shapes';
+export { Background, type BackgroundProps, type BackgroundVariant } from './ui/Background';
+export { Controls, type ControlsProps } from './ui/Controls';
+export { MiniMap, type MiniMapProps } from './ui/MiniMap';
+export type { PanelPosition } from './ui/panel';

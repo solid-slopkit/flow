@@ -25,6 +25,9 @@ export type PortInfo = { side: Side | undefined; kind: PortKind; max: number | u
 /** What an `<Edge>` draws: its SVG content for the Edge layer, and its label for the label layer (ADR 0015). */
 export type EdgeLayers = { path: JSX.Element; label: JSX.Element };
 
+/** Where built-in UI draws: under the Viewport (a Background), or over it in a corner (Controls, a MiniMap). */
+export type FlowLayer = 'background' | 'panel';
+
 export type ReparentRule = (node: FlowNode<any>, parent: FlowNode<any> | undefined) => boolean;
 
 export interface FlowInternals {
@@ -49,6 +52,10 @@ export interface FlowInternals {
   edgeLayers(): readonly EdgeLayers[];
   addEdgeLayers(layers: EdgeLayers): void;
   removeEdgeLayers(layers: EdgeLayers): void;
+  /** What built-in UI drew in one layer, in the order it was rendered. */
+  layer(layer: FlowLayer): readonly JSX.Element[];
+  addToLayer(layer: FlowLayer, element: JSX.Element): void;
+  removeFromLayer(layer: FlowLayer, element: JSX.Element): void;
   dragging(id: string): boolean;
   setDragging(ids: ReadonlySet<string>): void;
   dropTarget(): string | undefined;

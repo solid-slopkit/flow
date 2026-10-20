@@ -90,6 +90,24 @@ _Avoid_: focus (that is keyboard focus, a different thing)
 Computing positions for a Flow's Nodes (and routes for its Edges) automatically, returned as a Batch of Changes.
 _Avoid_: auto-arrange, positioning
 
+### Built-in UI
+
+**Background**:
+A pattern of dots, lines or crosses behind the Nodes and Edges, moving with the Viewport.
+_Avoid_: grid (as a component name), canvas
+
+**Controls**:
+The buttons over the Flow for zooming, fitting the view and locking editing.
+_Avoid_: toolbar, zoom panel
+
+**MiniMap**:
+A small overview of the whole Flow, with the visible area, that pans and zooms the Viewport.
+_Avoid_: overview, navigator, preview
+
+**Panel**:
+Built-in UI placed in a corner over the Viewport (Controls, a MiniMap), whose input is its own.
+_Avoid_: overlay, widget
+
 ### Package docs
 
 **Skill**:

@@ -16,34 +16,34 @@ The Flow has no size of its own: give it one with CSS, or with `width` and `heig
 
 ## Props
 
-| Prop               | Type                                    | Default                   | Description                                                                                                      |
-| ------------------ | --------------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `state`            | `FlowState<N, E>`                       | required                  | The app's data, usually a store.                                                                                 |
-| `onChange`         | `(batch: Batch<N, E>) => void`          |                           | Every edit, as a Batch. The app applies what it accepts.                                                         |
-| `createId`         | `() => string`                          | `crypto.randomUUID()`     | Ids for records the Flow creates.                                                                                |
-| `interactive`      | `boolean`                               | `true`                    | `false` is read-only: no Batches are sent. Panning and zooming still work.                                       |
-| `viewport`         | `Viewport`                              |                           | Controlled: the Flow shows this and reports changes through `onViewportChange`.                                  |
-| `defaultViewport`  | `Viewport`                              | `{ x: 0, y: 0, zoom: 1 }` | Uncontrolled starting Viewport.                                                                                  |
-| `onViewportChange` | `(viewport: Viewport) => void`          |                           | Every Viewport change, controlled or not.                                                                        |
-| `minZoom`          | `number`                                | `0.5`                     |                                                                                                                  |
-| `maxZoom`          | `number`                                | `2`                       |                                                                                                                  |
-| `scrollPans`       | `boolean`                               | `false`                   | The wheel pans instead of zooming; Ctrl + wheel and trackpad pinch still zoom.                                   |
-| `fitView`          | `boolean \| FitViewOptions`             | `false`                   | Start fitted to the Nodes with a size.                                                                           |
-| `snapToGrid`       | `number \| [number, number]`            |                           | Dragged Nodes snap to a grid (see [nodes](../node/node.md)).                                                     |
-| `alignmentGuides`  | `boolean \| { threshold? }`             | `false`                   | Guides and snapping to other Nodes while dragging.                                                               |
-| `reparentOnDrop`   | `boolean \| (node, parent) => boolean`  | `false`                   | Dropping dragged Nodes onto a Node nests them in it.                                                             |
-| `canConnect`       | `(source: End, target: End) => boolean` |                           | Whether a Connection may end there, after Port kinds and `max` (see [connections](../connection/connection.md)). |
-| `connectionRadius` | `number`                                | `20`                      | How close, in screen pixels, a Connection snaps to a Port it may end on.                                         |
-| `onConnectEnd`     | `(end: ConnectEnd) => void`             |                           | A new Connection dropped on empty space: its position in Flow coordinates and its starting Port.                 |
-| `selectionMode`    | `'partial' \| 'full'`                   | `'partial'`               | Which Nodes the selection box takes (see [selection](../selection/selection.md)).                                |
-| `transformCopy`    | `(payload) => payload \| undefined`     |                           | Changes what copy and cut write (see [clipboard](../clipboard/clipboard.md)).                                    |
-| `transformPaste`   | `(payload) => payload \| undefined`     |                           | Changes what a paste adds.                                                                                       |
-| `onDrop`           | `(drop: { data, position }) => void`    |                           | A `<FlowDraggable>` dropped on the Flow (see [palette](../palette/palette.md)).                                  |
-| `aria-label`       | `string`                                | `messages.flow`           | The Flow's accessible name (see [accessibility](../accessibility/accessibility.md)).                             |
-| `messages`         | `Partial<FlowMessages>`                 |                           | Replaces any label or announcement the Flow writes for assistive technology.                                     |
-| `width`, `height`  | `number`                                |                           | The Flow's declared size in pixels: set on the element, used until it is measured, and on the server.            |
-| `class`, `style`   |                                         |                           | On the Flow's root element (`.slp-flow`).                                                                        |
-| `children`         | `JSX.Element`                           |                           | Rendered in the Node layer; `<Edge>`s draw into the Edge and label layers (see [edges](../edge/edge.md)).        |
+| Prop               | Type                                    | Default                   | Description                                                                                                                                  |
+| ------------------ | --------------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `state`            | `FlowState<N, E>`                       | required                  | The app's data, usually a store.                                                                                                             |
+| `onChange`         | `(batch: Batch<N, E>) => void`          |                           | Every edit, as a Batch. The app applies what it accepts.                                                                                     |
+| `createId`         | `() => string`                          | `crypto.randomUUID()`     | Ids for records the Flow creates.                                                                                                            |
+| `interactive`      | `boolean`                               | `true`                    | `false` is read-only: no Batches are sent. Panning and zooming still work.                                                                   |
+| `viewport`         | `Viewport`                              |                           | Controlled: the Flow shows this and reports changes through `onViewportChange`.                                                              |
+| `defaultViewport`  | `Viewport`                              | `{ x: 0, y: 0, zoom: 1 }` | Uncontrolled starting Viewport.                                                                                                              |
+| `onViewportChange` | `(viewport: Viewport) => void`          |                           | Every Viewport change, controlled or not.                                                                                                    |
+| `minZoom`          | `number`                                | `0.5`                     |                                                                                                                                              |
+| `maxZoom`          | `number`                                | `2`                       |                                                                                                                                              |
+| `scrollPans`       | `boolean`                               | `false`                   | The wheel pans instead of zooming; Ctrl + wheel and trackpad pinch still zoom.                                                               |
+| `fitView`          | `boolean \| FitViewOptions`             | `false`                   | Start fitted to the Nodes with a size.                                                                                                       |
+| `snapToGrid`       | `number \| [number, number]`            |                           | Dragged Nodes snap to a grid (see [nodes](../node/node.md)).                                                                                 |
+| `alignmentGuides`  | `boolean \| { threshold? }`             | `false`                   | Guides and snapping to other Nodes while dragging.                                                                                           |
+| `reparentOnDrop`   | `boolean \| (node, parent) => boolean`  | `false`                   | Dropping dragged Nodes onto a Node nests them in it.                                                                                         |
+| `canConnect`       | `(source: End, target: End) => boolean` |                           | Whether a Connection may end there, after Port kinds and `max` (see [connections](../connection/connection.md)).                             |
+| `connectionRadius` | `number`                                | `20`                      | How close, in screen pixels, a Connection snaps to a Port it may end on.                                                                     |
+| `onConnectEnd`     | `(end: ConnectEnd) => void`             |                           | A new Connection dropped on empty space: its position in Flow coordinates and its starting Port.                                             |
+| `selectionMode`    | `'partial' \| 'full'`                   | `'partial'`               | Which Nodes the selection box takes (see [selection](../selection/selection.md)).                                                            |
+| `transformCopy`    | `(payload) => payload \| undefined`     |                           | Changes what copy and cut write (see [clipboard](../clipboard/clipboard.md)).                                                                |
+| `transformPaste`   | `(payload) => payload \| undefined`     |                           | Changes what a paste adds.                                                                                                                   |
+| `onDrop`           | `(drop: { data, position }) => void`    |                           | A `<FlowDraggable>` dropped on the Flow (see [palette](../palette/palette.md)).                                                              |
+| `aria-label`       | `string`                                | `messages.flow`           | The Flow's accessible name (see [accessibility](../accessibility/accessibility.md)).                                                         |
+| `messages`         | `Partial<FlowMessages>`                 |                           | Replaces any label or announcement the Flow writes for assistive technology.                                                                 |
+| `width`, `height`  | `number`                                |                           | The Flow's declared size in pixels: set on the element, used until it is measured, and on the server.                                        |
+| `class`, `style`   |                                         |                           | On the Flow's root element (`.slp-flow`).                                                                                                    |
+| `children`         | `JSX.Element`                           |                           | Rendered in the Node layer; `<Edge>`s and built-in UI draw into their own layers (see [edges](../edge/edge.md), [built-in UI](../ui/ui.md)). |
 
 ## Viewport
 
@@ -67,25 +67,27 @@ Built on Pointer Events with pointer capture, so mouse, pen and touch share one 
 
 Inside a Flow's children, returns that Flow's `FlowApi`. Each Flow has its own, so several Flows can share a page. Throws outside a Flow.
 
-| Member                        | Description                                                                                                |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `state()`, `index()`          | The state, and a `FlowIndex` over it.                                                                      |
-| `emit(batch)`                 | Sends a Batch to `onChange`, and announces it in the live region; dropped when not interactive.            |
-| `createId()`, `interactive()` | From the props.                                                                                            |
-| `viewport()`                  | The current Viewport. Reactive.                                                                            |
-| `setViewport(viewport)`       | Clamps the zoom; sets it when uncontrolled, reports it through `onViewportChange` either way.              |
-| `zoomTo(zoom, around?)`       | Zooms keeping the Flow point under `around` (a screen point) in place; default the Flow's centre.          |
-| `zoomIn()`, `zoomOut()`       | Zoom by a factor of 1.2 around the centre.                                                                 |
-| `screenToFlow(point)`         | A screen point, as `clientX` / `clientY` report it, to Flow coordinates.                                   |
-| `flowToScreen(point)`         | The other way.                                                                                             |
-| `fitView(options?)`           | Shows every Node with a size, or `options.nodes`, whole and centred. Nothing when none has a size.         |
-| `fitBounds(rect, options?)`   | Shows a box in Flow coordinates whole and centred.                                                         |
-| `size()`                      | The Flow's size: measured in the page, else `width` / `height`. Reactive.                                  |
-| `zoomLimits()`                | `{ minZoom, maxZoom }`.                                                                                    |
-| `measuredSize(id)`            | A Node's Measured size, while it is rendered. Reactive.                                                    |
-| `measuredPort(node, port)`    | A Port's measured `{ x, y, side }`, relative to its Node. Reactive.                                        |
-| `port(node, port)`            | A Port's `{ side, kind, max }`: its `<Port>`, else its declaration (see [ports](../port/port.md)).         |
-| `connection()`                | The Connection being dragged, else `undefined` (see [connections](../connection/connection.md)). Reactive. |
+| Member                      | Description                                                                                                |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `state()`, `index()`        | The state, and a `FlowIndex` over it.                                                                      |
+| `emit(batch)`               | Sends a Batch to `onChange`, and announces it in the live region; dropped when not interactive.            |
+| `createId()`                | From the props.                                                                                            |
+| `interactive()`             | Whether the Flow sends Batches: the `interactive` prop, and not locked. Reactive.                          |
+| `locked()`, `setLocked(on)` | Locks editing, as the lock button of `<Controls>` does; the Flow's own state, starting unlocked. Reactive. |
+| `viewport()`                | The current Viewport. Reactive.                                                                            |
+| `setViewport(viewport)`     | Clamps the zoom; sets it when uncontrolled, reports it through `onViewportChange` either way.              |
+| `zoomTo(zoom, around?)`     | Zooms keeping the Flow point under `around` (a screen point) in place; default the Flow's centre.          |
+| `zoomIn()`, `zoomOut()`     | Zoom by a factor of 1.2 around the centre.                                                                 |
+| `screenToFlow(point)`       | A screen point, as `clientX` / `clientY` report it, to Flow coordinates.                                   |
+| `flowToScreen(point)`       | The other way.                                                                                             |
+| `fitView(options?)`         | Shows every Node with a size, or `options.nodes`, whole and centred. Nothing when none has a size.         |
+| `fitBounds(rect, options?)` | Shows a box in Flow coordinates whole and centred.                                                         |
+| `size()`                    | The Flow's size: measured in the page, else `width` / `height`. Reactive.                                  |
+| `zoomLimits()`              | `{ minZoom, maxZoom }`.                                                                                    |
+| `measuredSize(id)`          | A Node's Measured size, while it is rendered. Reactive.                                                    |
+| `measuredPort(node, port)`  | A Port's measured `{ x, y, side }`, relative to its Node. Reactive.                                        |
+| `port(node, port)`          | A Port's `{ side, kind, max }`: its `<Port>`, else its declaration (see [ports](../port/port.md)).         |
+| `connection()`              | The Connection being dragged, else `undefined` (see [connections](../connection/connection.md)). Reactive. |
 
 `FitOptions` is `{ padding?: number }`, space kept free around the bounds in screen pixels (default 24). `FitViewOptions` adds `nodes?: string[]`.
 
@@ -144,6 +146,7 @@ const state: FlowState = {
 
 ```
 .slp-flow                  root: overflow hidden, touch-action none, data-panning / data-connecting
+  svg.slp-flow-background  each <Background>, under the Viewport
   .slp-flow-viewport       transform: translate(x, y) scale(zoom), origin top-left
     svg.slp-flow-edges     the Edge layer: each <Edge>'s g.slp-flow-edge
     .slp-flow-nodes        the Node layer: the Flow's children
@@ -151,4 +154,5 @@ const state: FlowState = {
     svg.slp-flow-connection  the preview line of a Connection being dragged
     svg.slp-flow-guides    alignment guides while dragging
   .slp-flow-selection-box  the selection box, in pixels over the Flow
+  .slp-flow-panel          each <Controls> and <MiniMap>, in a corner over the Viewport
 ```

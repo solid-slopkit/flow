@@ -36,6 +36,7 @@ The Flow's root is its one stop in the page's Tab order (`tabindex="0"`). Nodes,
 1. Each Node in spatial order: top-level Nodes by their top edge, then their left edge, each followed by the Nodes nested in it (ordered the same way). Ties keep state order.
 2. After each Node, what can take focus inside it, in page order: its Ports and the app's own controls (inputs, buttons, links).
 3. Then the Edges, ordered by where their Source comes, then their Target.
+4. Then the built-in UI over the Flow, `<Controls>` and `<MiniMap>`, in page order (see [built-in UI](../ui/ui.md)).
 
 | Key            | Where             | Does                                                                                    |
 | -------------- | ----------------- | --------------------------------------------------------------------------------------- |
@@ -48,7 +49,7 @@ The Flow's root is its one stop in the page's Tab order (`tabindex="0"`). Nodes,
 - Focus is not the Selection. The arrow keys and Delete act on the Selection (see [selection](../selection/selection.md)), so select a focused Node with Space before moving it.
 - Focusing an item from the keyboard pans the Viewport to centre it when it isn't wholly in sight. The Flow's root clips its content (`overflow: clip`), so focus never scrolls it.
 - Removing the focused Node or Edge with Delete, Backspace or cut moves focus to the Flow itself, so the keyboard keeps working.
-- Keys typed in an `input`, `textarea`, `select` or editable content are the field's, except Tab.
+- Keys typed in an `input`, `textarea`, `select` or editable content are the field's, except Tab. So are keys pressed in built-in UI (`[data-flow-panel]`): arrow keys over the MiniMap pan, and Delete on a Controls button removes nothing.
 
 ## Connecting from the keyboard
 
@@ -98,6 +99,14 @@ interface FlowMessages {
   selected(selection: { nodes: string[]; edges: number }): string;
   connecting(connection: { port: string; node: string; targets: number }): string;
   connectionCancelled: string;
+  // Built-in UI (see ui.md)
+  controls: string; // 'Flow controls'
+  zoomIn: string; // 'Zoom in'
+  zoomOut: string; // 'Zoom out'
+  fitView: string; // 'Fit view'
+  lock: string; // 'Lock editing'
+  miniMap: string; // 'Mini map'
+  miniMapInstructions: string;
 }
 ```
 

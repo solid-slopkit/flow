@@ -5,6 +5,7 @@ import { removal } from '../changes/apply';
 import type { FlowApi } from '../flow/Flow';
 import type { FlowInternals } from '../flow/internals';
 import type { Point } from '../model/model';
+import { PANEL } from '../flow/gestures';
 import { EDITABLE } from '../selection/keyboard';
 import { selectionChanges } from '../selection/select';
 import { CLIPBOARD_TYPE, copyPayload, parsePayload, pastePayload } from './payload';
@@ -17,7 +18,7 @@ export function attachClipboard(root: HTMLElement, flow: FlowApi, internals: Flo
 
   const ours = (event: ClipboardEvent) => {
     const target = event.target instanceof Element ? event.target : undefined;
-    return !!event.clipboardData && !target?.closest(EDITABLE);
+    return !!event.clipboardData && !target?.closest(`${EDITABLE}, ${PANEL}`);
   };
 
   /** Writes the copied Nodes; `true` when there was something to copy. */
