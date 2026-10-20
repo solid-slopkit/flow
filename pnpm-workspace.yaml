@@ -16,7 +16,7 @@ minimumReleaseAgeExclude:
   - solid-js
   - '@solidjs/*'
   - filesystem-routing
-  - '@solid-slopkit/components@0.1.0'
+  - '@solid-slopkit/components@0.2.1'
 
 # eslint-plugin-solid (used by oxlint) pulls in @typescript-eslint/* 8.x, which declares
 # typescript <6.1. We run TypeScript 7; oxlint parses the code itself, so the solid rules

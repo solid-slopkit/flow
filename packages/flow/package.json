@@ -41,7 +41,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "@solid-slopkit/components": "^0.1.0",
+    "@solid-slopkit/components": "^0.2.1",
     "@solidjs/diagnostics": "^2.0.0-rc.15",
     "@solidjs/testing-library": "^1.0.0-beta.3",
     "@solidjs/vite-plugin": "^3.0.0-next.46",
@@ -56,7 +56,7 @@
     "vitest": "^5.0.0"
   },
   "peerDependencies": {
-    "@solid-slopkit/components": "^0.1.0",
+    "@solid-slopkit/components": "^0.2.0",
     "@solidjs/web": ">=2.0.0-rc.15 <3",
     "elkjs": ">=0.9 <1",
     "solid-js": ">=2.0.0-rc.15 <3"

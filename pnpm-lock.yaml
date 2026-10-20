@@ -31,8 +31,8 @@ importers:
         specifier: ^1.52.0
         version: 1.59.0(solid-js@2.0.0-rc.15)
       '@solid-slopkit/components':
-        specifier: ^0.1.0
-        version: 0.1.0(@solidjs/web@2.0.0-rc.15)(solid-js@2.0.0-rc.15)
+        specifier: ^0.2.1
+        version: 0.2.1(@solidjs/web@2.0.0-rc.15)(solid-js@2.0.0-rc.15)
       '@solid-slopkit/flow':
         specifier: workspace:*
         version: link:../../packages/flow
@@ -93,8 +93,8 @@ importers:
         version: 2.0.0-rc.15
     devDependencies:
       '@solid-slopkit/components':
-        specifier: ^0.1.0
-        version: 0.1.0(@solidjs/web@2.0.0-rc.15)(solid-js@2.0.0-rc.15)
+        specifier: ^0.2.1
+        version: 0.2.1(@solidjs/web@2.0.0-rc.15)(solid-js@2.0.0-rc.15)
       '@solidjs/diagnostics':
         specifier: ^2.0.0-rc.15
         version: 2.0.0-rc.15(@solidjs/web@2.0.0-rc.15)(solid-js@2.0.0-rc.15)(vitest@5.0.5)
@@ -1013,12 +1013,12 @@ packages:
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
 
-  '@solid-slopkit/components@0.1.0':
-    resolution: {integrity: sha512-2N85AiSQUP9pxb7Vmx/IVqAdkMsQYc8JplF4t2UDuwXIgV3EPTNMSaat3nHW4XElYu/gWMgBrQaj/sOk/Hl/FQ==}
+  '@solid-slopkit/components@0.2.1':
+    resolution: {integrity: sha512-LgkPXUDC642H5Ydrxq7yQNMSrVnaBN+2z4JaVRPbDyjq1q+84ZpMhZ1oBpegQdcyCU102n8Ia186GMfTFvPK7g==}
     peerDependencies:
-      '@solidjs/web': '>=2.0.0-rc.11 <3'
+      '@solidjs/web': '>=2.0.0-rc.15 <3'
       embla-carousel: ^8.6.0
-      solid-js: '>=2.0.0-rc.11 <3'
+      solid-js: '>=2.0.0-rc.15 <3'
     peerDependenciesMeta:
       embla-carousel:
         optional: true
@@ -3180,7 +3180,7 @@ snapshots:
 
   '@shikijs/vscode-textmate@10.0.2': {}
 
-  '@solid-slopkit/components@0.1.0(@solidjs/web@2.0.0-rc.15)(solid-js@2.0.0-rc.15)':
+  '@solid-slopkit/components@0.2.1(@solidjs/web@2.0.0-rc.15)(solid-js@2.0.0-rc.15)':
     dependencies:
       '@floating-ui/dom': 1.8.0
       '@solidjs/web': 2.0.0-rc.15(solid-js@2.0.0-rc.15)

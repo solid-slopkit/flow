@@ -74,7 +74,7 @@ describe('<Controls>', () => {
     expect(api().locked()).toBe(true);
     expect(api().interactive()).toBe(false);
     expect(button('Lock editing').getAttribute('aria-pressed')).toBe('true');
-    expect(button('Lock editing').hasAttribute('data-active')).toBe(true);
+    expect(button('Lock editing').hasAttribute('data-pressed')).toBe(true);
     expect(nodeElement('a').hasAttribute('data-draggable')).toBe(false);
     fireEvent.keyDown(root(), { key: 'Delete' });
     expect(batches).toEqual([]);
