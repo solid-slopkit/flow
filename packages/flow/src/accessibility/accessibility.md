@@ -48,6 +48,7 @@ The Flow's root is its one stop in the page's Tab order (`tabindex="0"`). Nodes,
 
 - Focus is not the Selection. The arrow keys and Delete act on the Selection (see [selection](../selection/selection.md)), so select a focused Node with Space before moving it.
 - Focusing an item from the keyboard pans the Viewport to centre it when it isn't wholly in sight. The Flow's root clips its content (`overflow: clip`), so focus never scrolls it.
+- With `onlyRenderVisible` (see [rendering only visible Nodes](../flow/flow.md#rendering-only-visible-nodes)), the order still covers every Node, Port and Edge, rendered or not: Tab to one out of sight centres the Viewport on it and renders it before focusing it, and it stays rendered while it has focus. Nodes out of sight are not in the page, so a screen reader's own reading commands don't reach them; that is why the mode is off by default.
 - Removing the focused Node or Edge with Delete, Backspace or cut moves focus to the Flow itself, so the keyboard keeps working.
 - Keys typed in an `input`, `textarea`, `select` or editable content are the field's, except Tab. So are keys pressed in built-in UI (`[data-flow-panel]`): arrow keys over the MiniMap pan, and Delete on a Controls button removes nothing.
 

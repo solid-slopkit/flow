@@ -6,6 +6,7 @@ import { useFlowInternals, type EdgeLayers } from '../flow/internals';
 import { edgeEnds, nodeBounds, type EndPoint } from '../geometry/geometry';
 import type { FlowIndex } from '../model/flow-index';
 import type { EdgeShapeName, FlowEdge } from '../model/model';
+import { pathPoints, pointsBounds } from '../viewport/visible';
 import { edgeShapes, type EdgeGeometry, type EdgeShape, type EdgeShapeContext } from './shapes';
 
 export type EdgeMarkerType = 'arrow' | 'arrow-closed';
@@ -111,7 +112,8 @@ export function EdgePath(props: { class?: string; style?: JSX.CSSProperties }): 
 
 /**
  * One Edge of the Flow, drawn in the SVG Edge layer between its two ends, with its label in the label layer. Render it
- * inside a `<Flow>`, usually with `<For each={state.edges}>`. Nothing is drawn until both ends can be placed.
+ * inside a `<Flow>`, usually with `<For each={state.edges}>`. Nothing is drawn until both ends can be placed, nor, while
+ * the Flow renders only what is in sight, while its line is out of sight.
  */
 export function Edge(props: EdgeProps): JSX.Element {
   const flow = useFlow();
@@ -154,6 +156,26 @@ export function Edge(props: EdgeProps): JSX.Element {
     { name: `edge:${name}:geometry` },
   );
 
+  // The box its line lies in: its ends and label point, with the control points of a built-in shape's path.
+  const bounds = createMemo(
+    () => {
+      const current = ends();
+      const drawn = geometry();
+      if (!current || !drawn) return undefined;
+      return pointsBounds([current.source, current.target, drawn.label, ...(pathPoints(drawn.d) ?? [])]);
+    },
+    { name: `edge:${name}:bounds`, lazy: true },
+  );
+  // Whether it is drawn while only what is in sight is (ADR 0015). Selected, focused and reconnected Edges always are.
+  const shown = createMemo(
+    () => {
+      if (!internals.culling() || record()?.selected || internals.edgeFocused(name) || internals.reconnecting(name)) return true;
+      const box = bounds();
+      return !box || internals.inSight(box);
+    },
+    { name: `edge:${name}:shown` },
+  );
+
   const api: EdgeApi = {
     id: () => props.id,
     edge: record,
@@ -167,7 +189,7 @@ export function Edge(props: EdgeProps): JSX.Element {
 
   return (
     <EdgeContext value={api}>
-      <EdgeDrawing edge={props} markerId={markerId} />
+      <EdgeDrawing edge={props} markerId={markerId} shown={shown} />
     </EdgeContext>
   );
 }
@@ -180,7 +202,7 @@ function EdgeEnd(props: { end: 'source' | 'target' }): JSX.Element {
 }
 
 /** Creates the Edge's SVG and label inside its context, and hands them to the Flow's layers. Renders nothing in place. */
-function EdgeDrawing(props: { edge: EdgeProps; markerId: string }): JSX.Element {
+function EdgeDrawing(props: { edge: EdgeProps; markerId: string; shown: () => boolean }): JSX.Element {
   const internals = useFlowInternals();
   const edge = useEdge();
   const flow = useFlow();
@@ -207,28 +229,34 @@ function EdgeDrawing(props: { edge: EdgeProps; markerId: string }): JSX.Element 
     return point && `translate(${point.x}px, ${point.y}px) translate(-50%, -50%)`;
   };
 
+  // Its group and label box stay in the page while it is out of sight, emptied, so an Edge coming into sight or leaving
+  // it changes only what is inside them (ADR 0015).
+  const drawn = () => placed() && props.shown();
   const layers: EdgeLayers = {
     path: (
       <g
         class={props.edge.class ? `slp-flow-edge ${props.edge.class}` : 'slp-flow-edge'}
         data-flow-edge={props.edge.id}
-        tabindex={placed() ? '-1' : undefined}
+        tabindex={drawn() ? '-1' : undefined}
         role="group"
         aria-roledescription={internals.messages().edge}
         aria-label={ariaLabel()}
+        aria-hidden={props.shown() ? undefined : 'true'}
         data-selected={edge.selected() ? '' : undefined}
         data-reconnecting={internals.reconnecting(props.edge.id) ? '' : undefined}
         style={props.edge.style}
       >
-        <Show when={props.edge.markerStart}>{(marker) => <Marker id={`${props.markerId}-start`} marker={marker()} />}</Show>
-        <Show when={props.edge.markerEnd}>{(marker) => <Marker id={`${props.markerId}-end`} marker={marker()} />}</Show>
-        <Show when={placed() && flow.interactive()}>
-          <path class="slp-flow-edge-hit" d={edge.geometry()?.d} />
-        </Show>
-        <Show when={placed()}>{'children' in props.edge ? props.edge.children : <EdgePath />}</Show>
-        <Show when={placed() && reconnectable()}>
-          <EdgeEnd end="source" />
-          <EdgeEnd end="target" />
+        <Show when={props.shown()}>
+          <Show when={props.edge.markerStart}>{(marker) => <Marker id={`${props.markerId}-start`} marker={marker()} />}</Show>
+          <Show when={props.edge.markerEnd}>{(marker) => <Marker id={`${props.markerId}-end`} marker={marker()} />}</Show>
+          <Show when={placed() && flow.interactive()}>
+            <path class="slp-flow-edge-hit" d={edge.geometry()?.d} />
+          </Show>
+          <Show when={placed()}>{'children' in props.edge ? props.edge.children : <EdgePath />}</Show>
+          <Show when={placed() && reconnectable()}>
+            <EdgeEnd end="source" />
+            <EdgeEnd end="target" />
+          </Show>
         </Show>
       </g>
     ),
@@ -238,9 +266,10 @@ function EdgeDrawing(props: { edge: EdgeProps; markerId: string }): JSX.Element 
           class="slp-flow-edge-label"
           data-flow-edge-label={props.edge.id}
           data-selected={edge.selected() ? '' : undefined}
+          hidden={!props.shown()}
           style={{ transform: transform() }}
         >
-          {content()}
+          <Show when={props.shown()}>{content()}</Show>
         </div>
       </Show>
     ),

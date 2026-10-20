@@ -30,6 +30,7 @@ export const nav: NavSection[] = [
       { title: 'Accessibility', href: '/accessibility' },
       { title: 'Built-in UI', href: '/built-in-ui' },
       { title: 'Layout', href: '/layout' },
+      { title: 'Large Flows', href: '/large-flows' },
       { title: 'Server rendering', href: '/server-rendering' },
     ],
   },

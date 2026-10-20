@@ -29,7 +29,7 @@ describe('<Node>', () => {
   test('renders the app’s content in the Node layer', () => {
     const { nodeElement, root } = renderEditor(state);
     expect(nodeElement('child')).toHaveTextContent('child');
-    expect(nodeElement('child').parentElement).toBe(root().querySelector('.slp-flow-nodes'));
+    expect(nodeElement('child').parentElement!.parentElement).toBe(root().querySelector('.slp-flow-nodes'));
   });
 
   test('draws children above their Parent, and a later top-level Node above a whole earlier tree', () => {

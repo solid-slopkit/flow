@@ -3,6 +3,7 @@ import {
   children,
   createContext,
   createMemo,
+  createProjection,
   createSignal,
   createStore,
   createUniqueId,
@@ -43,11 +44,13 @@ import {
   type Viewport,
   type ZoomLimits,
 } from '../viewport/viewport';
+import { cellsOf, touches, visibleArea } from '../viewport/visible';
 import { attachGestures } from './gestures';
 import {
   FlowInternalsContext,
   type EdgeLayers,
   type FlowInternals,
+  type FocusTarget,
   type Guide,
   type MeasuredPort,
   type NodeBox,
@@ -115,6 +118,12 @@ export interface FlowProps<N = unknown, E = unknown> {
   'aria-label'?: string;
   /** Replaces any of the labels and announcements the Flow writes for assistive technology, to word or translate them. */
   messages?: Partial<FlowMessages>;
+  /**
+   * Render only the Nodes and Edges in sight, and those within `margin` screen pixels of it (default 200), so a Flow
+   * can hold many thousands of Nodes. Nodes that are selected, focused, dragged or part of a Connection stay rendered.
+   * Off by default: a Node that isn't rendered is hidden from screen readers too (ADR 0015).
+   */
+  onlyRenderVisible?: boolean | { margin?: number };
   /** The Flow's declared width in pixels, used until it is measured, and on the server. */
   width?: number;
   /** The Flow's declared height in pixels. */
@@ -182,7 +191,10 @@ const samePorts = (a: Record<string, MeasuredPort> | undefined, b: Record<string
     keys.every((key) => b[key] && a[key]!.x === b[key].x && a[key]!.y === b[key].y && a[key]!.side === b[key].side)
   );
 };
+const sameRect = (a: Rect | undefined, b: Rect | undefined) =>
+  a === b || (!!a && !!b && a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height);
 const GUIDE_THRESHOLD = 6;
+const VISIBLE_MARGIN = 200;
 const CONNECTION_RADIUS = 20;
 const endKey = (end: End | undefined) => end && `${end.node}\u0000${end.port ?? ''}`;
 type ConnectionMarks = { from: string | undefined; target: string | undefined; edge: string | undefined };
@@ -258,9 +270,21 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
   let marked: ConnectionMarks = { from: undefined, target: undefined, edge: undefined };
   // Whether there is a Connection, written only when it starts or ends, so a move doesn't reach what reads it.
   const [connecting, setConnecting] = createSignal(false, { name: 'connecting' });
+  // The Nodes a Connection starts from and snaps to, keyed, written only when either changes.
+  const [linked, setLinked] = createStore<Record<string, true>>({});
+  let linkedNow: string[] = [];
   const setConnection = (next: Connection | undefined) => {
     setConnectionSignal(next);
     setConnecting(next !== undefined);
+    const nodes = next ? [next.from.node, ...(next.to ? [next.to.node] : [])] : [];
+    if (nodes.length !== linkedNow.length || nodes.some((node, i) => node !== linkedNow[i])) {
+      const previous = linkedNow;
+      linkedNow = nodes;
+      setLinked((draft) => {
+        for (const node of previous) delete draft[node];
+        for (const node of nodes) draft[node] = true;
+      });
+    }
     const keys: ConnectionMarks = { from: endKey(next?.from), target: endKey(next?.to), edge: next?.reconnecting?.edge };
     const kinds = (Object.keys(keys) as (keyof ConnectionMarks)[]).filter((kind) => keys[kind] !== marked[kind]);
     if (!kinds.length) return;
@@ -303,6 +327,30 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
   const [panelLayer, setPanelLayer] = createSignal<readonly JSX.Element[]>([], { name: 'panelLayer', ownedWrite: true });
   const layers = { background: [backgroundLayer, setBackgroundLayer], panel: [panelLayer, setPanelLayer] } as const;
   const [locked, setLocked] = createSignal(false, { name: 'locked' });
+
+  // Rendering only what is in sight (ADR 0015). The margin, in screen pixels, when it is on.
+  const visibleMargin = () => {
+    const option = props.onlyRenderVisible;
+    return option ? ((option === true ? undefined : option.margin) ?? VISIBLE_MARGIN) : undefined;
+  };
+  // What has focus, keyed, so only the Node or Edge it moves to or from re-runs.
+  const [focus, setFocus] = createStore<{ node: Record<string, true>; edge: Record<string, true> }>({ node: {}, edge: {} });
+  let focused: { node?: string; edge?: string } = {};
+  const setFocused = (target: FocusTarget | undefined) => {
+    const next = {
+      node: target && 'node' in target ? target.node : undefined,
+      edge: target && 'edge' in target ? target.edge : undefined,
+    };
+    if (next.node === focused.node && next.edge === focused.edge) return;
+    const previous = focused;
+    focused = next;
+    setFocus((draft) => {
+      if (previous.node !== undefined) delete draft.node[previous.node];
+      if (previous.edge !== undefined) delete draft.edge[previous.edge];
+      if (next.node !== undefined) draft.node[next.node] = true;
+      if (next.edge !== undefined) draft.edge[next.edge] = true;
+    });
+  };
   const interactive = () => (props.interactive ?? true) && !locked();
   const internals: FlowInternals = {
     measuredSize,
@@ -350,6 +398,17 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
     layer: (layer) => layers[layer][0](),
     addToLayer: (layer, element) => layers[layer][1]((list) => [...list, element]),
     removeFromLayer: (layer, element) => layers[layer][1]((list) => list.filter((entry) => entry !== element)),
+    culling: () => visibleMargin() !== undefined,
+    inSight: (box) => {
+      if (visibleMargin() === undefined || near.all) return true;
+      const cells = cellsOf(box);
+      if (cells && !cells.some((cell) => near.cells[cell])) return false;
+      return touches(box, visible()!);
+    },
+    nodeShown: (id) => visibleMargin() === undefined || (nodeOptions.get(id)?.shown ?? false),
+    nodeHeld: (id) => focus.node[id] === true || linked[id] === true,
+    edgeFocused: (id) => focus.edge[id] === true,
+    setFocused,
     dragging: (id) => dragging().has(id),
     nodeBoxes,
     settledNodeBoxes,
@@ -401,6 +460,31 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
   let latest = initial;
   const viewport = () => props.viewport ?? (own(), latest);
   const current = () => props.viewport ?? latest;
+
+  const visible = createMemo(
+    (): Rect | undefined => {
+      const margin = visibleMargin();
+      if (margin === undefined) return undefined;
+      const flowSize = size();
+      // Neither measured nor declared: nothing can be out of sight yet.
+      if (!flowSize.width || !flowSize.height) return undefined;
+      return visibleArea(viewport(), flowSize, margin);
+    },
+    { name: 'visibleArea', equals: sameRect },
+  );
+  // The cells near the visible area, keyed, so panning re-runs only the Nodes and Edges in cells that come near or
+  // leave, and those in cells near it, which then check exactly. `all` while nothing can be out of sight yet.
+  const near = createProjection<{ all: boolean; cells: Record<string, true> }>(
+    (draft) => {
+      const area = visible();
+      const keys = new Set(area ? (cellsOf(area, Infinity) ?? []) : []);
+      draft.all = !area;
+      for (const key of Object.keys(draft.cells)) if (!keys.has(key)) delete draft.cells[key];
+      for (const key of keys) draft.cells[key] = true;
+    },
+    { all: true, cells: {} },
+    { name: 'nearCells' },
+  );
 
   // Otherwise the first fit waits for sizes: it is redone as the Flow and its Nodes are measured, until every Node has a
   // size, unless the Viewport is moved first.
@@ -523,7 +607,7 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
     const detachSelection = attachSelection(element, api as FlowApi, internals);
     // In this order: a keyboard Connection takes its keys first, then focus moves, then the Selection's keys.
     const keyboardConnections = attachKeyboardConnections(element, api as FlowApi, internals);
-    const detachFocus = attachFocus(element, api as FlowApi);
+    const detachFocus = attachFocus(element, api as FlowApi, internals);
     const detachKeyboard = attachKeyboard(element, api as FlowApi, () => connections.cancel() || keyboardConnections.cancel());
     const detachClipboard = attachClipboard(element, api as FlowApi, internals);
     const unregister = registerDropTarget(element, (data, point) => {

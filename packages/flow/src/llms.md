@@ -40,7 +40,7 @@ export function Root() {
 
 The data model, Changes and History are plain TypeScript and work without a DOM.
 
-- Surface: `Flow`, `useFlow`, `Viewport`.
+- Surface: `Flow`, `useFlow`, `Viewport`; the Flow's `onlyRenderVisible` for large Flows.
 - Nodes: `Node`, `useNode`, `NodeResizer`, `MeasuredPort`.
 - Ports: `Port`, `PortInfo`.
 - Connections: `Connection`, `ConnectEnd`, `ConnectionRule`; the Flow's `canConnect`, `connectionRadius` and `onConnectEnd`.
@@ -59,7 +59,7 @@ The data model, Changes and History are plain TypeScript and work without a DOM.
 
 ## References
 
-- [Flow and Viewport](flow/flow.md): `<Flow>` and its props, pan and zoom gestures, `useFlow`, `fitView`, server rendering.
+- [Flow and Viewport](flow/flow.md): `<Flow>` and its props, pan and zoom gestures, `useFlow`, `fitView`, rendering only visible Nodes, server rendering.
 - [Nodes](node/node.md): `<Node>`, measuring, dragging, nesting, snapping, alignment guides, `<NodeResizer>`.
 - [Ports](port/port.md): `<Port>`, its side, kind and `max`, measured versus declared Ports.
 - [Edges](edge/edge.md): `<Edge>`, Edge shapes, custom Edges with `useEdge`, markers, labels.

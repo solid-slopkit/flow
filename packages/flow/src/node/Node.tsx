@@ -1,4 +1,4 @@
-import { createContext, createMemo, onCleanup, onSettled, untrack, useContext } from 'solid-js';
+import { createContext, createMemo, onCleanup, onSettled, Show, untrack, useContext } from 'solid-js';
 import type { JSX } from '@solidjs/web';
 
 import { useFlow } from '../flow/Flow';
@@ -56,7 +56,8 @@ function nearestSide(point: Point, width: number, height: number): Side {
 
 /**
  * One Node of the Flow, drawn at its record's position (absolute through its Parents), with the app's JSX as content.
- * Render it inside a `<Flow>`, usually with `<For each={state.nodes}>`.
+ * Render it inside a `<Flow>`, usually with `<For each={state.nodes}>`. While the Flow renders only what is in sight,
+ * its element and content are rendered only then, and its Measured size is kept in between (ADR 0015).
  */
 export function Node(props: NodeProps): JSX.Element {
   const flow = useFlow();
@@ -68,7 +69,17 @@ export function Node(props: NodeProps): JSX.Element {
     name: `node:${name}:position`,
     equals: samePoint,
   });
-  let element: HTMLDivElement | undefined;
+
+  // Whether its element is rendered (ADR 0015): while it is in sight, selected, dragged, focused or part of a Connection.
+  const shown = createMemo(
+    () => {
+      if (!internals.culling() || record()?.selected || internals.dragging(name) || internals.nodeHeld(name)) return true;
+      const size = internals.measuredSize(name) ?? record()?.size;
+      // Without a size yet it is placed by its position, so it renders, and is measured, once it is near.
+      return internals.inSight({ ...position(), width: size?.width ?? 0, height: size?.height ?? 0 });
+    },
+    { name: `node:${name}:shown` },
+  );
 
   internals.nodeOptions.set(name, {
     get keepInParent() {
@@ -77,8 +88,22 @@ export function Node(props: NodeProps): JSX.Element {
     get label() {
       return props['aria-label'];
     },
+    get shown() {
+      return shown();
+    },
   });
-  onCleanup(() => internals.nodeOptions.delete(name));
+  onCleanup(() => {
+    internals.nodeOptions.delete(name);
+    // Disposal is an owned scope, where state may not be written: forget what was measured just after, unless a Node
+    // with the same id has been rendered since.
+    queueMicrotask(() => {
+      if (internals.nodeOptions.has(name)) return;
+      internals.setMeasuredSize(name, undefined);
+      internals.setMeasuredPorts(name, undefined);
+      internals.setNodeText(name, undefined);
+      internals.portInfo.delete(name);
+    });
+  });
 
   // Ports rendered with <Port> register here, so one added after the Node is in the page is observed too.
   const portElements = new Set<HTMLElement>();
@@ -102,93 +127,99 @@ export function Node(props: NodeProps): JSX.Element {
     measure: () => measure?.(),
   };
 
-  onSettled(() => {
-    const node = element!;
-    const readText = () => internals.setNodeText(name, node.textContent?.replace(/\s+/g, ' ').trim() || undefined);
-    readText();
-    // Its text can change without changing its size.
-    const texts = typeof MutationObserver === 'undefined' ? undefined : new MutationObserver(readText);
-    texts?.observe(node, { characterData: true, childList: true, subtree: true });
-    // Measured in layout pixels, which the Viewport's transform doesn't change (ADR 0015).
-    measure = () => {
-      const width = node.offsetWidth;
-      const height = node.offsetHeight;
-      // A Node with no area isn't laid out (hidden, or no layout at all): nothing in it can be measured.
-      if (!width && !height) {
-        internals.setMeasuredSize(name, undefined);
-        internals.setMeasuredPorts(name, undefined);
-        return;
-      }
-      internals.setMeasuredSize(name, { width, height });
-      const box = node.getBoundingClientRect();
-      const zoom = box.width && width ? box.width / width : 1;
-      const ports: Record<string, MeasuredPort> = {};
-      for (const port of node.querySelectorAll<HTMLElement>('[data-flow-port]')) {
-        // Ports of this Node only: a Port's own Node is the closest one around it.
-        if (port.closest('[data-flow-node]') !== node || removedPorts.has(port)) continue;
-        const rect = port.getBoundingClientRect();
-        const centre = {
-          x: (rect.left + rect.width / 2 - box.left) / zoom,
-          y: (rect.top + rect.height / 2 - box.top) / zoom,
-        };
-        const side = port.getAttribute('data-flow-port-side') as Side | null;
-        ports[port.getAttribute('data-flow-port')!] = { ...centre, side: side ?? nearestSide(centre, width, height) };
-      }
-      internals.setMeasuredPorts(name, Object.keys(ports).length ? ports : undefined);
-    };
-    measure();
-    observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure);
-    observer?.observe(node);
-    for (const port of node.querySelectorAll('[data-flow-port]')) observer?.observe(port);
-    for (const port of portElements) observer?.observe(port);
-    const detach = attachNodeDrag(node, id, flow, internals, () => props.dragHandle);
-    return () => {
-      observer?.disconnect();
-      observer = undefined;
-      texts?.disconnect();
-      measure = undefined;
-      detach();
-      // Disposal is an owned scope, where state may not be written: forget the sizes just after, unless a Node with
-      // the same id has been rendered since.
-      queueMicrotask(() => {
-        if (internals.nodeOptions.has(name)) return;
-        internals.setMeasuredSize(name, undefined);
-        internals.setMeasuredPorts(name, undefined);
-        internals.setNodeText(name, undefined);
-      });
-    };
-  });
+  // The element, rendered while the Node is shown. Measuring starts when it is in the page and stops when it leaves; what
+  // was measured stays until the Node itself is gone.
+  const Element = (): JSX.Element => {
+    let element: HTMLDivElement | undefined;
+    onSettled(() => {
+      const node = element!;
+      const readText = () => internals.setNodeText(name, node.textContent?.replace(/\s+/g, ' ').trim() || undefined);
+      readText();
+      // Its text can change without changing its size.
+      const texts = typeof MutationObserver === 'undefined' ? undefined : new MutationObserver(readText);
+      texts?.observe(node, { characterData: true, childList: true, subtree: true });
+      // Measured in layout pixels, which the Viewport's transform doesn't change (ADR 0015).
+      measure = () => {
+        const width = node.offsetWidth;
+        const height = node.offsetHeight;
+        // A Node with no area isn't laid out (hidden, or no layout at all): nothing in it can be measured.
+        if (!width && !height) {
+          internals.setMeasuredSize(name, undefined);
+          internals.setMeasuredPorts(name, undefined);
+          return;
+        }
+        internals.setMeasuredSize(name, { width, height });
+        const box = node.getBoundingClientRect();
+        const zoom = box.width && width ? box.width / width : 1;
+        const ports: Record<string, MeasuredPort> = {};
+        for (const port of node.querySelectorAll<HTMLElement>('[data-flow-port]')) {
+          // Ports of this Node only: a Port's own Node is the closest one around it.
+          if (port.closest('[data-flow-node]') !== node || removedPorts.has(port)) continue;
+          const rect = port.getBoundingClientRect();
+          const centre = {
+            x: (rect.left + rect.width / 2 - box.left) / zoom,
+            y: (rect.top + rect.height / 2 - box.top) / zoom,
+          };
+          const side = port.getAttribute('data-flow-port-side') as Side | null;
+          ports[port.getAttribute('data-flow-port')!] = { ...centre, side: side ?? nearestSide(centre, width, height) };
+        }
+        internals.setMeasuredPorts(name, Object.keys(ports).length ? ports : undefined);
+      };
+      measure();
+      observer = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure);
+      observer?.observe(node);
+      for (const port of node.querySelectorAll('[data-flow-port]')) observer?.observe(port);
+      for (const port of portElements) observer?.observe(port);
+      const detach = attachNodeDrag(node, id, flow, internals, () => props.dragHandle);
+      return () => {
+        observer?.disconnect();
+        observer = undefined;
+        texts?.disconnect();
+        measure = undefined;
+        detach();
+      };
+    });
 
-  const style = (): JSX.CSSProperties => {
-    const { x, y } = position();
-    const size = record()?.size;
-    return {
-      transform: `translate(${x}px, ${y}px)`,
-      'z-index': internals.zOrder(props.id),
-      width: size ? `${size.width}px` : undefined,
-      height: size ? `${size.height}px` : undefined,
-      ...props.style,
+    const style = (): JSX.CSSProperties => {
+      const { x, y } = position();
+      const size = record()?.size;
+      return {
+        transform: `translate(${x}px, ${y}px)`,
+        'z-index': internals.zOrder(props.id),
+        width: size ? `${size.width}px` : undefined,
+        height: size ? `${size.height}px` : undefined,
+        ...props.style,
+      };
     };
+
+    return (
+      <div
+        ref={(node) => (element = node)}
+        class={props.class ? `slp-flow-node ${props.class}` : 'slp-flow-node'}
+        data-flow-node={props.id}
+        tabindex="-1"
+        role="group"
+        aria-roledescription={internals.messages().node}
+        aria-label={internals.nodeName(props.id)}
+        data-selected={record()?.selected ? '' : undefined}
+        data-draggable={flow.interactive() && record()?.draggable !== false ? '' : undefined}
+        data-dragging={internals.dragging(props.id) ? '' : undefined}
+        data-drop-target={internals.dropTarget() === props.id ? '' : undefined}
+        style={style()}
+      >
+        <NodeContext value={{ id }}>
+          <NodeMeasuringContext value={measuring}>{props.children}</NodeMeasuringContext>
+        </NodeContext>
+      </div>
+    );
   };
 
+  // The slot is always in the page, so a Node coming into sight or leaving it changes only what is inside it.
   return (
-    <div
-      ref={(node) => (element = node)}
-      class={props.class ? `slp-flow-node ${props.class}` : 'slp-flow-node'}
-      data-flow-node={props.id}
-      tabindex="-1"
-      role="group"
-      aria-roledescription={internals.messages().node}
-      aria-label={internals.nodeName(props.id)}
-      data-selected={record()?.selected ? '' : undefined}
-      data-draggable={flow.interactive() && record()?.draggable !== false ? '' : undefined}
-      data-dragging={internals.dragging(props.id) ? '' : undefined}
-      data-drop-target={internals.dropTarget() === props.id ? '' : undefined}
-      style={style()}
-    >
-      <NodeContext value={{ id }}>
-        <NodeMeasuringContext value={measuring}>{props.children}</NodeMeasuringContext>
-      </NodeContext>
+    <div class="slp-flow-node-slot" style={{ display: 'contents' }}>
+      <Show when={shown()}>
+        <Element />
+      </Show>
     </div>
   );
 }

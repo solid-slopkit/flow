@@ -62,6 +62,14 @@ export function Port(props: PortProps): JSX.Element {
   ports.set(id, info);
   onCleanup(() => {
     if (ports.get(id) !== info) return;
+    // A Node out of sight keeps what its Ports said until they are rendered again, or the Node is gone (ADR 0015).
+    if (!untrack(() => internals.nodeShown(nodeId), false)) {
+      ports.set(
+        id,
+        untrack(() => ({ side: info.side, kind: info.kind, max: info.max }), false),
+      );
+      return;
+    }
     ports.delete(id);
     if (!ports.size) internals.portInfo.delete(nodeId);
   });

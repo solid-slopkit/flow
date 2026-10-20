@@ -16,34 +16,35 @@ The Flow has no size of its own: give it one with CSS, or with `width` and `heig
 
 ## Props
 
-| Prop               | Type                                    | Default                   | Description                                                                                                                                  |
-| ------------------ | --------------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `state`            | `FlowState<N, E>`                       | required                  | The app's data, usually a store.                                                                                                             |
-| `onChange`         | `(batch: Batch<N, E>) => void`          |                           | Every edit, as a Batch. The app applies what it accepts.                                                                                     |
-| `createId`         | `() => string`                          | `crypto.randomUUID()`     | Ids for records the Flow creates.                                                                                                            |
-| `interactive`      | `boolean`                               | `true`                    | `false` is read-only: no Batches are sent. Panning and zooming still work.                                                                   |
-| `viewport`         | `Viewport`                              |                           | Controlled: the Flow shows this and reports changes through `onViewportChange`.                                                              |
-| `defaultViewport`  | `Viewport`                              | `{ x: 0, y: 0, zoom: 1 }` | Uncontrolled starting Viewport.                                                                                                              |
-| `onViewportChange` | `(viewport: Viewport) => void`          |                           | Every Viewport change, controlled or not.                                                                                                    |
-| `minZoom`          | `number`                                | `0.5`                     |                                                                                                                                              |
-| `maxZoom`          | `number`                                | `2`                       |                                                                                                                                              |
-| `scrollPans`       | `boolean`                               | `false`                   | The wheel pans instead of zooming; Ctrl + wheel and trackpad pinch still zoom.                                                               |
-| `fitView`          | `boolean \| FitViewOptions`             | `false`                   | Start fitted to the Nodes with a size.                                                                                                       |
-| `snapToGrid`       | `number \| [number, number]`            |                           | Dragged Nodes snap to a grid (see [nodes](../node/node.md)).                                                                                 |
-| `alignmentGuides`  | `boolean \| { threshold? }`             | `false`                   | Guides and snapping to other Nodes while dragging.                                                                                           |
-| `reparentOnDrop`   | `boolean \| (node, parent) => boolean`  | `false`                   | Dropping dragged Nodes onto a Node nests them in it.                                                                                         |
-| `canConnect`       | `(source: End, target: End) => boolean` |                           | Whether a Connection may end there, after Port kinds and `max` (see [connections](../connection/connection.md)).                             |
-| `connectionRadius` | `number`                                | `20`                      | How close, in screen pixels, a Connection snaps to a Port it may end on.                                                                     |
-| `onConnectEnd`     | `(end: ConnectEnd) => void`             |                           | A new Connection dropped on empty space: its position in Flow coordinates and its starting Port.                                             |
-| `selectionMode`    | `'partial' \| 'full'`                   | `'partial'`               | Which Nodes the selection box takes (see [selection](../selection/selection.md)).                                                            |
-| `transformCopy`    | `(payload) => payload \| undefined`     |                           | Changes what copy and cut write (see [clipboard](../clipboard/clipboard.md)).                                                                |
-| `transformPaste`   | `(payload) => payload \| undefined`     |                           | Changes what a paste adds.                                                                                                                   |
-| `onDrop`           | `(drop: { data, position }) => void`    |                           | A `<FlowDraggable>` dropped on the Flow (see [palette](../palette/palette.md)).                                                              |
-| `aria-label`       | `string`                                | `messages.flow`           | The Flow's accessible name (see [accessibility](../accessibility/accessibility.md)).                                                         |
-| `messages`         | `Partial<FlowMessages>`                 |                           | Replaces any label or announcement the Flow writes for assistive technology.                                                                 |
-| `width`, `height`  | `number`                                |                           | The Flow's declared size in pixels: set on the element, used until it is measured, and on the server.                                        |
-| `class`, `style`   |                                         |                           | On the Flow's root element (`.slp-flow`).                                                                                                    |
-| `children`         | `JSX.Element`                           |                           | Rendered in the Node layer; `<Edge>`s and built-in UI draw into their own layers (see [edges](../edge/edge.md), [built-in UI](../ui/ui.md)). |
+| Prop                | Type                                    | Default                   | Description                                                                                                                                  |
+| ------------------- | --------------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `state`             | `FlowState<N, E>`                       | required                  | The app's data, usually a store.                                                                                                             |
+| `onChange`          | `(batch: Batch<N, E>) => void`          |                           | Every edit, as a Batch. The app applies what it accepts.                                                                                     |
+| `createId`          | `() => string`                          | `crypto.randomUUID()`     | Ids for records the Flow creates.                                                                                                            |
+| `interactive`       | `boolean`                               | `true`                    | `false` is read-only: no Batches are sent. Panning and zooming still work.                                                                   |
+| `viewport`          | `Viewport`                              |                           | Controlled: the Flow shows this and reports changes through `onViewportChange`.                                                              |
+| `defaultViewport`   | `Viewport`                              | `{ x: 0, y: 0, zoom: 1 }` | Uncontrolled starting Viewport.                                                                                                              |
+| `onViewportChange`  | `(viewport: Viewport) => void`          |                           | Every Viewport change, controlled or not.                                                                                                    |
+| `minZoom`           | `number`                                | `0.5`                     |                                                                                                                                              |
+| `maxZoom`           | `number`                                | `2`                       |                                                                                                                                              |
+| `scrollPans`        | `boolean`                               | `false`                   | The wheel pans instead of zooming; Ctrl + wheel and trackpad pinch still zoom.                                                               |
+| `fitView`           | `boolean \| FitViewOptions`             | `false`                   | Start fitted to the Nodes with a size.                                                                                                       |
+| `snapToGrid`        | `number \| [number, number]`            |                           | Dragged Nodes snap to a grid (see [nodes](../node/node.md)).                                                                                 |
+| `alignmentGuides`   | `boolean \| { threshold? }`             | `false`                   | Guides and snapping to other Nodes while dragging.                                                                                           |
+| `reparentOnDrop`    | `boolean \| (node, parent) => boolean`  | `false`                   | Dropping dragged Nodes onto a Node nests them in it.                                                                                         |
+| `canConnect`        | `(source: End, target: End) => boolean` |                           | Whether a Connection may end there, after Port kinds and `max` (see [connections](../connection/connection.md)).                             |
+| `connectionRadius`  | `number`                                | `20`                      | How close, in screen pixels, a Connection snaps to a Port it may end on.                                                                     |
+| `onConnectEnd`      | `(end: ConnectEnd) => void`             |                           | A new Connection dropped on empty space: its position in Flow coordinates and its starting Port.                                             |
+| `selectionMode`     | `'partial' \| 'full'`                   | `'partial'`               | Which Nodes the selection box takes (see [selection](../selection/selection.md)).                                                            |
+| `transformCopy`     | `(payload) => payload \| undefined`     |                           | Changes what copy and cut write (see [clipboard](../clipboard/clipboard.md)).                                                                |
+| `transformPaste`    | `(payload) => payload \| undefined`     |                           | Changes what a paste adds.                                                                                                                   |
+| `onDrop`            | `(drop: { data, position }) => void`    |                           | A `<FlowDraggable>` dropped on the Flow (see [palette](../palette/palette.md)).                                                              |
+| `aria-label`        | `string`                                | `messages.flow`           | The Flow's accessible name (see [accessibility](../accessibility/accessibility.md)).                                                         |
+| `messages`          | `Partial<FlowMessages>`                 |                           | Replaces any label or announcement the Flow writes for assistive technology.                                                                 |
+| `onlyRenderVisible` | `boolean \| { margin? }`                | `false`                   | Render only the Nodes and Edges in sight, for large Flows (see [below](#rendering-only-visible-nodes)).                                      |
+| `width`, `height`   | `number`                                |                           | The Flow's declared size in pixels: set on the element, used until it is measured, and on the server.                                        |
+| `class`, `style`    |                                         |                           | On the Flow's root element (`.slp-flow`).                                                                                                    |
+| `children`          | `JSX.Element`                           |                           | Rendered in the Node layer; `<Edge>`s and built-in UI draw into their own layers (see [edges](../edge/edge.md), [built-in UI](../ui/ui.md)). |
 
 ## Viewport
 
@@ -84,7 +85,7 @@ Inside a Flow's children, returns that Flow's `FlowApi`. Each Flow has its own, 
 | `fitBounds(rect, options?)` | Shows a box in Flow coordinates whole and centred.                                                         |
 | `size()`                    | The Flow's size: measured in the page, else `width` / `height`. Reactive.                                  |
 | `zoomLimits()`              | `{ minZoom, maxZoom }`.                                                                                    |
-| `measuredSize(id)`          | A Node's Measured size, while it is rendered. Reactive.                                                    |
+| `measuredSize(id)`          | A Node's Measured size, once it has been rendered and measured. Reactive.                                  |
 | `measuredPort(node, port)`  | A Port's measured `{ x, y, side }`, relative to its Node. Reactive.                                        |
 | `port(node, port)`          | A Port's `{ side, kind, max }`: its `<Port>`, else its declaration (see [ports](../port/port.md)).         |
 | `connection()`              | The Connection being dragged, else `undefined` (see [connections](../connection/connection.md)). Reactive. |
@@ -102,6 +103,27 @@ function ZoomButtons() {
   );
 }
 ```
+
+## Rendering only visible Nodes
+
+Every Node is the app's own DOM, so a Flow slows down past a few thousand of them. With `onlyRenderVisible`, the Flow renders only the Nodes and Edges in sight, and those within `margin` screen pixels of it (default 200). The rest aren't in the page until the Viewport brings them near (ADR 0015).
+
+```tsx
+<Flow state={flow} onChange={apply} onlyRenderVisible={{ margin: 300 }}>
+  <For each={flow.nodes}>{(node) => <Node id={node.id}>{node.data.title}</Node>}</For>
+  <For each={flow.edges}>{(edge) => <Edge id={edge.id} />}</For>
+</Flow>
+```
+
+- It is off by default because a Node that isn't rendered is hidden from screen readers too. Keyboard focus still reaches every Node (below).
+- A Node is in sight when its box touches the visible area: from its Measured size, else its Declared size, else its position alone. Give Nodes a Declared `size` so they are placed exactly before they are ever rendered.
+- A Node that leaves sight keeps its last Measured size, its measured Ports, its name and what its `<Port>`s said (side, kind, `max`), so Edges, Connections, `fitView` and the MiniMap still place it. They are forgotten only when the Node itself is no longer rendered by the app.
+- Nodes that are selected, dragged, focused (or hold focus) or part of a Connection (where it starts and the Port it snaps to) stay rendered out of sight.
+- An Edge is drawn when its line is in sight: the box of its ends, its label point and, for a built-in shape, its path's control points. A selected, focused or reconnected Edge is always drawn. An Edge out of sight keeps its empty `g.slp-flow-edge` (with `aria-hidden`, no `tabindex`) and a hidden, empty label box.
+- Each `<Node>` sits in an empty `div.slp-flow-node-slot` (`display: contents`) that stays in the page, and its element and content render inside it while it is shown. The app's content is created afresh each time a Node comes back into sight, so keep state that must survive in the app's data.
+- Tab and Shift+Tab still follow spatial order over every Node, Port and Edge, from the data: moving focus to one that isn't rendered centres the Viewport on it, renders it, then focuses it (see [accessibility](../accessibility/accessibility.md#focus)). A keyboard Connection reaches Ports on Nodes out of sight the same way.
+- Panning and zooming re-run only the Nodes and Edges near the visible area, in 400 × 400 cells of Flow coordinates; the rest don't run at all.
+- On the server the visible area comes from `width`, `height` and the starting Viewport, so the server and the browser render the same Nodes. Without a declared size every Node renders until the Flow is measured.
 
 ## Server rendering
 
@@ -149,7 +171,7 @@ const state: FlowState = {
   svg.slp-flow-background  each <Background>, under the Viewport
   .slp-flow-viewport       transform: translate(x, y) scale(zoom), origin top-left
     svg.slp-flow-edges     the Edge layer: each <Edge>'s g.slp-flow-edge
-    .slp-flow-nodes        the Node layer: the Flow's children
+    .slp-flow-nodes        the Node layer: the Flow's children, each <Node> in its div.slp-flow-node-slot
     .slp-flow-labels       the Edge label layer, above the Nodes: each .slp-flow-edge-label
     svg.slp-flow-connection  the preview line of a Connection being dragged
     svg.slp-flow-guides    alignment guides while dragging

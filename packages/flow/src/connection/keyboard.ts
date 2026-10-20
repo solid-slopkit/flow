@@ -1,6 +1,6 @@
 // Connecting from the keyboard: Enter on a focused Port starts a Connection, Tab, Shift+Tab or the arrow keys move
 // focus through the Ports it may end on, and Enter on one sends the same `connect` Batch a drop would. Escape cancels.
-import { focusInFlow, focusOrder } from '../accessibility/focus';
+import { focusItem, focusOrder, holds, isRendered, type FocusItem } from '../accessibility/focus';
 import type { FlowApi } from '../flow/Flow';
 import type { FlowInternals } from '../flow/internals';
 import { portPoint, type EndPoint } from '../geometry/geometry';
@@ -16,6 +16,12 @@ const NEXT = new Set(['ArrowRight', 'ArrowDown']);
 const PREVIOUS = new Set(['ArrowLeft', 'ArrowUp']);
 
 const sameEnd = (a: End, b: End) => a.node === b.node && a.port === b.port;
+
+/** The Port an item of the focus order is, as an End of this Flow. */
+function portOfItem(root: HTMLElement, item: FocusItem): End | undefined {
+  if (isRendered(item)) return portOf(root, item);
+  return 'node' in item && item.port !== undefined ? { node: item.node, port: item.port } : undefined;
+}
 
 /** The Port an element is, as an End of this Flow. */
 function portOf(root: HTMLElement, element: Element): End | undefined {
@@ -61,11 +67,11 @@ export function attachKeyboardConnections(
     return true;
   };
 
-  /** The Ports the Connection may end on that can take focus, in the Flow's Tab order. */
-  const targets = () => {
+  /** The Ports the Connection may end on that can take focus, in the Flow's Tab order (`order`). */
+  const targets = (order = focusOrder(root, flow, internals)) => {
     const candidates = active!.candidates;
-    return focusOrder(root, flow).filter((element) => {
-      const end = portOf(root, element);
+    return order.filter((item) => {
+      const end = portOfItem(root, item);
       return end !== undefined && candidates.some((candidate) => sameEnd(candidate.end, end));
     });
   };
@@ -111,20 +117,20 @@ export function attachKeyboardConnections(
       event.key === 'Tab' ? !event.shiftKey : NEXT.has(event.key) ? true : PREVIOUS.has(event.key) ? false : undefined;
     if (forward === undefined) return;
     event.preventDefault();
-    const list = targets();
+    const order = focusOrder(root, flow, internals);
+    const list = targets(order);
     if (!list.length) return;
     // From the focused target to the next one, round the ends; from anywhere else to the first after it in the Tab order.
     const at = list.indexOf(target as HTMLElement);
     let next: number;
     if (at >= 0) next = (at + (forward ? 1 : -1) + list.length) % list.length;
     else {
-      const order = focusOrder(root, flow);
-      const here = order.findLastIndex((element) => element === target || element.contains(target));
-      const after = list.findIndex((element) => order.indexOf(element) > here);
+      const here = order.findLastIndex((item) => holds(item, target));
+      const after = list.findIndex((item) => order.indexOf(item) > here);
       next = forward ? (after < 0 ? 0 : after) : (after < 0 ? list.length : after) - 1;
       if (next < 0) next = list.length - 1;
     }
-    focusInFlow(root, flow, list[next]!);
+    focusItem(root, flow, internals, list[next]!);
   };
 
   /** Focus on a Port the Connection may end on makes it the target; focus anywhere else in the Flow clears it. */

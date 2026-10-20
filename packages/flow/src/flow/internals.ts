@@ -17,7 +17,7 @@ export type MeasuredPort = Point & { side: Side };
 export type Guide = { x1: number; y1: number; x2: number; y2: number };
 
 /** What a `<Node>` says about itself that isn't in the data. */
-export type NodeOptions = { keepInParent: boolean; label: string | undefined };
+export type NodeOptions = { keepInParent: boolean; label: string | undefined; shown: boolean };
 
 /** A Port as the Flow knows it: a rendered `<Port>`'s props over its declared `PortSpec`. Its fields are reactive. */
 export type PortInfo = { side: Side | undefined; kind: PortKind; max: number | undefined };
@@ -30,6 +30,9 @@ export type FlowLayer = 'background' | 'panel';
 
 /** A Node's box in Flow coordinates. */
 export type NodeBox = { id: string; bounds: Rect };
+
+/** What keyboard focus is on, or inside: a Node (or one of its Ports), or an Edge (or its label). */
+export type FocusTarget = { node: string } | { edge: string };
 
 export type ReparentRule = (node: FlowNode<any>, parent: FlowNode<any> | undefined) => boolean;
 
@@ -59,6 +62,18 @@ export interface FlowInternals {
   layer(layer: FlowLayer): readonly JSX.Element[];
   addToLayer(layer: FlowLayer, element: JSX.Element): void;
   removeFromLayer(layer: FlowLayer, element: JSX.Element): void;
+  /** Whether the Flow renders only the Nodes and Edges in sight (ADR 0015). */
+  culling(): boolean;
+  /** Whether a box in Flow coordinates is in the visible area; always while everything is rendered. Reactive. */
+  inSight(box: Rect): boolean;
+  /** Whether a `<Node>` renders its element: always, unless it is out of sight and nothing keeps it. Reactive per Node. */
+  nodeShown(id: string): boolean;
+  /** Whether focus or a Connection keeps a Node rendered out of sight. Reactive per Node. */
+  nodeHeld(id: string): boolean;
+  /** Whether focus is on or inside this Edge; changes only when focus moves to or from it. */
+  edgeFocused(id: string): boolean;
+  /** Where focus is in the Flow, so that Node or Edge stays rendered while it has it. */
+  setFocused(target: FocusTarget | undefined): void;
   dragging(id: string): boolean;
   /** Every Node with a size, and its box in Flow coordinates, in state order. */
   nodeBoxes(): readonly NodeBox[];

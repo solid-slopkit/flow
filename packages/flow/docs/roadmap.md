@@ -101,7 +101,7 @@ Built from `@solid-slopkit/components` (ADR 0016).
 
 ## F12 — Rendering only visible Nodes
 
-- [ ] **F12.01** The opt-in mode (ADR 0015): culling Nodes and Edges by bounds, keeping last Measured sizes, keeping selected, focused, dragged and connecting Nodes mounted, panning to a Node before focusing it.
+- [x] **F12.01** The opt-in mode (ADR 0015): culling Nodes and Edges by bounds, keeping last Measured sizes, keeping selected, focused, dragged and connecting Nodes mounted, panning to a Node before focusing it.
 
 ## F13 — Release
 
