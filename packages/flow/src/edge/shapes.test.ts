@@ -1,8 +1,16 @@
 import { describe, expect, test } from 'vitest';
 
 import type { EndPoint } from '../geometry/geometry';
-import type { Point } from '../model/model';
-import { bezierShape, edgeShapes, smoothStepShape, stepShape, straightShape } from './shapes';
+import type { Point, Rect } from '../model/model';
+import {
+  bezierShape,
+  edgeShapes,
+  routedStepShape,
+  smoothStepShape,
+  stepShape,
+  straightShape,
+  type EdgeShapeContext,
+} from './shapes';
 
 const end = (x: number, y: number, side: EndPoint['side']): EndPoint => ({ x, y, side });
 
@@ -135,6 +143,56 @@ test('edgeShapes names every shape', () => {
     straight: straightShape,
     step: stepShape,
     'smooth-step': smoothStepShape,
-    'routed-step': stepShape,
+    'routed-step': routedStepShape,
+  });
+});
+
+describe('routedStepShape', () => {
+  const context = (obstacles: Rect[]): EdgeShapeContext => ({
+    edge: { id: 'e', source: { node: 'a' }, target: { node: 'b' }, data: null },
+    nodeBounds: () => undefined,
+    obstacles: () => obstacles,
+  });
+  const a = { x: -100, y: -25, width: 100, height: 50 };
+  const b = { x: 200, y: 75, width: 100, height: 50 };
+
+  test('is the step line while it crosses no Node', () => {
+    const source = end(0, 0, 'right');
+    const target = end(200, 100, 'left');
+    expect(routedStepShape(source, target, context([a, b]))).toEqual(stepShape(source, target));
+  });
+
+  test('without a context, is the step line', () => {
+    expect(routedStepShape(end(0, 0, 'right'), end(200, 100, 'left'))).toEqual(
+      stepShape(end(0, 0, 'right'), end(200, 100, 'left')),
+    );
+  });
+
+  test('goes round a Node across the step line, labelled halfway along', () => {
+    const wall = { x: 60, y: -100, width: 80, height: 300 };
+    const { d, label } = routedStepShape(end(0, 0, 'right'), end(200, 100, 'left'), context([a, b, wall]));
+    const points = corners(d);
+    expect(orthogonal(points)).toBe(true);
+    expect(points[0]).toEqual({ x: 0, y: 0 });
+    expect(points.at(-1)).toEqual({ x: 200, y: 100 });
+    // Over or under the wall, keeping 20 from it.
+    expect(points.some((point) => point.y === -120 || point.y === 220)).toBe(true);
+    expect(points.every((point) => point.x <= 40 || point.x >= 160 || point.y <= -120 || point.y >= 220)).toBe(true);
+    expect(label).toBeDefined();
+  });
+
+  test('is the step line when no route exists', () => {
+    const walls = [{ x: 100, y: -1000, width: 10, height: 2000 }];
+    const boxed = context([
+      a,
+      b,
+      ...walls,
+      { x: 110, y: -1000, width: 1000, height: 10 },
+      { x: 110, y: 990, width: 1000, height: 10 },
+      { x: 1100, y: -1000, width: 10, height: 2000 },
+    ]);
+    expect(routedStepShape(end(0, 0, 'right'), end(200, 100, 'left'), boxed)).toEqual(
+      stepShape(end(0, 0, 'right'), end(200, 100, 'left')),
+    );
   });
 });

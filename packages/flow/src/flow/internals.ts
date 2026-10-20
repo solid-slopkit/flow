@@ -28,6 +28,9 @@ export type EdgeLayers = { path: JSX.Element; label: JSX.Element };
 /** Where built-in UI draws: under the Viewport (a Background), or over it in a corner (Controls, a MiniMap). */
 export type FlowLayer = 'background' | 'panel';
 
+/** A Node's box in Flow coordinates. */
+export type NodeBox = { id: string; bounds: Rect };
+
 export type ReparentRule = (node: FlowNode<any>, parent: FlowNode<any> | undefined) => boolean;
 
 export interface FlowInternals {
@@ -57,6 +60,10 @@ export interface FlowInternals {
   addToLayer(layer: FlowLayer, element: JSX.Element): void;
   removeFromLayer(layer: FlowLayer, element: JSX.Element): void;
   dragging(id: string): boolean;
+  /** Every Node with a size, and its box in Flow coordinates, in state order. */
+  nodeBoxes(): readonly NodeBox[];
+  /** `nodeBoxes()`, except that it holds still while Nodes are dragged and changes once the drag ends. */
+  settledNodeBoxes(): readonly NodeBox[];
   setDragging(ids: ReadonlySet<string>): void;
   dropTarget(): string | undefined;
   setDropTarget(id: string | undefined): void;

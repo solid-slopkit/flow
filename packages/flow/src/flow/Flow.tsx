@@ -50,6 +50,7 @@ import {
   type FlowInternals,
   type Guide,
   type MeasuredPort,
+  type NodeBox,
   type NodeOptions,
   type PortInfo,
 } from './internals';
@@ -230,6 +231,20 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
     { name: 'zOrder' },
   );
   const [dragging, setDragging] = createSignal<ReadonlySet<string>>(new Set(), { name: 'dragging' });
+  // One pass over the Nodes for every routed Edge, instead of one per Edge. Lazy: nothing runs without a routed Edge.
+  const nodeBoxes = createMemo(
+    () =>
+      props.state.nodes.flatMap((node): NodeBox[] => {
+        const bounds = nodeBounds(index(), node.id, measuredSize);
+        return bounds ? [{ id: node.id, bounds }] : [];
+      }),
+    { name: 'nodeBoxes', lazy: true },
+  );
+  // The same, held while Nodes are dragged: routed Edges whose ends don't move reroute once the drag ends (ADR 0021).
+  const settledNodeBoxes = createMemo(
+    (previous: readonly NodeBox[] | undefined) => (dragging().size > 0 && previous ? previous : nodeBoxes()),
+    { name: 'settledNodeBoxes', lazy: true },
+  );
   const [dropTarget, setDropTarget] = createSignal<string | undefined>(undefined, { name: 'dropTarget' });
   const [guides, setGuides] = createSignal<readonly Guide[]>([], {
     name: 'guides',
@@ -336,6 +351,8 @@ export function Flow<N = unknown, E = unknown>(props: FlowProps<N, E>): JSX.Elem
     addToLayer: (layer, element) => layers[layer][1]((list) => [...list, element]),
     removeFromLayer: (layer, element) => layers[layer][1]((list) => list.filter((entry) => entry !== element)),
     dragging: (id) => dragging().has(id),
+    nodeBoxes,
+    settledNodeBoxes,
     setDragging,
     dropTarget,
     setDropTarget,

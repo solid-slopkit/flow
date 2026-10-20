@@ -26,6 +26,8 @@ const PUBLIC_API: string[] = [
   'nodeBounds',
   'portPoint',
   'removal',
+  'routeOrthogonal',
+  'routedStepShape',
   'smoothStepShape',
   'stepShape',
   'straightShape',

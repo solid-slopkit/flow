@@ -49,18 +49,19 @@ type EdgeGeometry = { d: string; label: Point }; // SVG path data, and the label
 interface EdgeShapeContext {
   edge: FlowEdge; // the Edge being drawn
   nodeBounds(id: string): Rect | undefined; // a Node's box, from its Measured else Declared size
+  obstacles(): Rect[]; // the boxes to go round: every Node with a size except the Parents of the Edge's ends
 }
 ```
 
-Each `EndPoint` is `{ x, y, side }`: the side says which way the line leaves that end. The built-in shapes ignore `context`; it is there so a shape can route around Nodes.
+Each `EndPoint` is `{ x, y, side }`: the side says which way the line leaves that end. Only `routed-step` reads `context`; the other built-in shapes ignore it. A shape reading `obstacles()` is redrawn when Nodes move, except during a drag: then only when its own ends move, and once more when the drag ends.
 
-| Name          | Function          | Line                                                                             |
-| ------------- | ----------------- | -------------------------------------------------------------------------------- |
-| `bezier`      | `bezierShape`     | A cubic curve leaving each end toward its side. The default.                     |
-| `straight`    | `straightShape`   | A straight line.                                                                 |
-| `step`        | `stepShape`       | Horizontal and vertical runs, leaving each end toward its side, turning halfway. |
-| `smooth-step` | `smoothStepShape` | A step line with rounded corners.                                                |
-| `routed-step` | `stepShape`       | Drawn as `step` for now: it doesn't avoid Nodes yet.                             |
+| Name          | Function          | Line                                                                                     |
+| ------------- | ----------------- | ---------------------------------------------------------------------------------------- |
+| `bezier`      | `bezierShape`     | A cubic curve leaving each end toward its side. The default.                             |
+| `straight`    | `straightShape`   | A straight line.                                                                         |
+| `step`        | `stepShape`       | Horizontal and vertical runs, leaving each end toward its side, turning halfway.         |
+| `smooth-step` | `smoothStepShape` | A step line with rounded corners.                                                        |
+| `routed-step` | `routedStepShape` | A step line that goes round the Nodes in its way (see [routing](../routing/routing.md)). |
 
 `edgeShapes` maps each name to its function. They are pure and run on the server. A custom shape is any function of that type:
 

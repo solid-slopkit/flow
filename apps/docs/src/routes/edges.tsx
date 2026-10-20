@@ -5,6 +5,8 @@ import { PropsTable } from '../components/PropsTable';
 import { DocTable } from '../components/DocTable';
 import EdgeShapes from '../examples/edge-shapes';
 import edgeShapesCode from '../examples/edge-shapes.tsx?raw';
+import RoutedEdges from '../examples/routed-edges';
+import routedEdgesCode from '../examples/routed-edges.tsx?raw';
 import CustomEdge from '../examples/custom-edge';
 import customEdgeCode from '../examples/custom-edge.tsx?raw';
 
@@ -65,6 +67,15 @@ export default function EdgesPage() {
       </p>
       <Example component={EdgeShapes} code={edgeShapesCode} flow />
 
+      <H2 id="routed-edges">Routed step Edges</H2>
+      <p>
+        The <code>routed-step</code> shape draws a step line that goes round the Nodes in its way, keeping a margin from them,
+        with as few turns as it can. It doesn't go round the Parents of its ends. While a Node is dragged, its own Edges are
+        rerouted on every frame; the others once it is dropped. <code>routeOrthogonal</code> is the router itself, for a shape of
+        the app's own.
+      </p>
+      <Example component={RoutedEdges} code={routedEdgesCode} flow />
+
       <H2 id="custom-edges">Custom Edges</H2>
       <p>
         Children replace the default line. They are SVG drawn inside the Edge, and read it through <code>useEdge()</code>: its
@@ -80,7 +91,7 @@ export default function EdgesPage() {
             name: 'shape',
             type: 'EdgeShapeName | EdgeShape',
             default: "record's, else 'bezier'",
-            description: 'bezier, straight, step, smooth-step, or a shape function.',
+            description: 'bezier, straight, step, smooth-step, routed-step, or a shape function.',
           },
           {
             name: 'markerStart, markerEnd',

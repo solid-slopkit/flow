@@ -4,6 +4,7 @@ import type { JSX } from '@solidjs/web';
 import { useFlow } from '../flow/Flow';
 import { useFlowInternals, type EdgeLayers } from '../flow/internals';
 import { edgeEnds, nodeBounds, type EndPoint } from '../geometry/geometry';
+import type { FlowIndex } from '../model/flow-index';
 import type { EdgeShapeName, FlowEdge } from '../model/model';
 import { edgeShapes, type EdgeGeometry, type EdgeShape, type EdgeShapeContext } from './shapes';
 
@@ -52,6 +53,16 @@ const EdgeContext = createContext<EdgeApi<any>>(undefined, { name: 'Edge' });
 /** Inside an `<Edge>`'s content or label: the Edge it draws. Throws outside an Edge. */
 export function useEdge<E = unknown>(): EdgeApi<E> {
   return useContext(EdgeContext);
+}
+
+/** The Nodes a Node is nested in, innermost first, stopping at a cycle. */
+function parentsOf(index: FlowIndex, id: string): string[] {
+  const parents: string[] = [];
+  for (let parent = index.node(id)?.parent; parent !== undefined && parent !== id && !parents.includes(parent);) {
+    parents.push(parent);
+    parent = index.node(parent)?.parent;
+  }
+  return parents;
 }
 
 const sameEnd = (a: EndPoint, b: EndPoint) => a.x === b.x && a.y === b.y && a.side === b.side;
@@ -125,6 +136,15 @@ export function Edge(props: EdgeProps): JSX.Element {
       return record()!;
     },
     nodeBounds: (id) => nodeBounds(flow.index(), id, internals.measuredSize),
+    obstacles: () => {
+      const edge = record();
+      if (!edge) return [];
+      // Redrawn when Nodes move, except during a drag: then only when its ends move, and once the drag ends (ADR 0021).
+      internals.settledNodeBoxes();
+      const boxes = untrack(internals.nodeBoxes);
+      const parents = new Set([...parentsOf(flow.index(), edge.source.node), ...parentsOf(flow.index(), edge.target.node)]);
+      return boxes.filter((box) => !parents.has(box.id)).map((box) => box.bounds);
+    },
   };
   const geometry = createMemo(
     () => {

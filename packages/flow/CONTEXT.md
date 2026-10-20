@@ -28,6 +28,14 @@ _Avoid_: connection, link, wire
 How an Edge's line runs between its two ends: bezier, straight, step, smooth step, routed step (orthogonal, around Nodes), or one the app supplies.
 _Avoid_: edge type, path type, curve
 
+**Route**:
+The corners a routed step Edge runs through, going round the Nodes in its way. Routing is computing one.
+_Avoid_: path (that is the SVG path data), waypoints
+
+**Obstacle**:
+A Node's box that a route goes round, kept a margin from.
+_Avoid_: blocker, collider
+
 **Edge label**:
 HTML content placed at an Edge's label point, above the Edge lines.
 _Avoid_: edge text, annotation

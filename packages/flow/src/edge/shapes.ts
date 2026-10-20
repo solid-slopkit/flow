@@ -2,16 +2,22 @@
 // on the server.
 import type { EndPoint } from '../geometry/geometry';
 import type { EdgeShapeName, FlowEdge, Point, Rect, Side } from '../model/model';
+import { routeOrthogonal } from '../routing/route';
 
 /** What an Edge shape returns: the SVG path data, and the point its label sits on, in Flow coordinates. */
 export type EdgeGeometry = { d: string; label: Point };
 
-/** What an Edge shape may know about the Flow besides its two ends. The built-in shapes don't read it. */
+/** What an Edge shape may know about the Flow besides its two ends. Of the built-in shapes, only routed step reads it. */
 export interface EdgeShapeContext {
   /** The Edge being drawn. */
   edge: FlowEdge<any>;
   /** A Node's box in Flow coordinates, from its Measured size, else its Declared size. */
   nodeBounds(id: string): Rect | undefined;
+  /**
+   * The boxes of the Nodes the Edge should go round: every Node with a size except the Parents of its ends. While Nodes
+   * are dragged, reading them doesn't redraw the Edge; it is redrawn when its ends move, and once the drag ends.
+   */
+  obstacles(): Rect[];
 }
 
 /** How an Edge's line runs between its ends. `context` is reserved so a shape can route around Nodes (ADR 0021). */
@@ -120,10 +126,19 @@ function midway(points: Point[]): Point {
   return points[0]!;
 }
 
+/** A line through the points with sharp corners, labelled halfway along. */
+const polyline = (points: Point[]): EdgeGeometry => ({ d: `M ${points.map(pair).join(' L ')}`, label: midway(points) });
+
 /** Horizontal and vertical lines with sharp corners, leaving each end toward its side; the label halfway along. */
-export const stepShape: EdgeShape = (source, target) => {
-  const points = stepPoints(source, target);
-  return { d: `M ${points.map(pair).join(' L ')}`, label: midway(points) };
+export const stepShape: EdgeShape = (source, target) => polyline(stepPoints(source, target));
+
+/**
+ * A step line that goes round the context's obstacles, routed with `routeOrthogonal` (ADR 0021). It is the plain step
+ * line while that crosses no Node, and falls back to it without a context or a route.
+ */
+export const routedStepShape: EdgeShape = (source, target, context) => {
+  const step = stepPoints(source, target);
+  return polyline((context && routeOrthogonal(source, target, context.obstacles(), { margin: OFFSET, prefer: step })) ?? step);
 };
 
 /** A step line with rounded corners. */
@@ -147,11 +162,11 @@ export const smoothStepShape: EdgeShape = (source, target) => {
   return { d: `${d} L ${pair(points.at(-1)!)}`, label: midway(points) };
 };
 
-/** The built-in shapes by name. `routed-step` is drawn as `step` for now: it doesn't yet avoid Nodes. */
+/** The built-in shapes by name. */
 export const edgeShapes: Record<EdgeShapeName, EdgeShape> = {
   bezier: bezierShape,
   straight: straightShape,
   step: stepShape,
   'smooth-step': smoothStepShape,
-  'routed-step': stepShape,
+  'routed-step': routedStepShape,
 };

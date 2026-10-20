@@ -59,6 +59,7 @@ export { Edge, EdgePath, useEdge, type EdgeApi, type EdgeMarker, type EdgeMarker
 export {
   bezierShape,
   edgeShapes,
+  routedStepShape,
   smoothStepShape,
   stepShape,
   straightShape,
@@ -66,6 +67,7 @@ export {
   type EdgeShape,
   type EdgeShapeContext,
 } from './edge/shapes';
+export { routeOrthogonal, type RouteOptions } from './routing/route';
 export { Background, type BackgroundProps, type BackgroundVariant } from './ui/Background';
 export { Controls, type ControlsProps } from './ui/Controls';
 export { MiniMap, type MiniMapProps } from './ui/MiniMap';

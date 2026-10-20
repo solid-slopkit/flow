@@ -91,8 +91,8 @@ Built from `@solid-slopkit/components` (ADR 0016).
 
 ## F10 — Routing
 
-- [ ] **F10.01** The orthogonal router: a sparse grid from Node bounds plus a margin, A* with a bend penalty (ADR 0021). Pure and tested without a DOM.
-- [ ] **F10.02** The routed step Edge shape: rerouting the Edges of moved Nodes on each drag frame, within a frame budget measured in a browser test.
+- [x] **F10.01** The orthogonal router: a sparse grid from Node bounds plus a margin, A* with a bend penalty (ADR 0021). Pure and tested without a DOM.
+- [x] **F10.02** The routed step Edge shape: rerouting the Edges of moved Nodes on each drag frame, within a frame budget measured in a browser test.
 
 ## F11 — Layout
 

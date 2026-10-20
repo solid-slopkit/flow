@@ -258,3 +258,101 @@ describe('labels', () => {
     expect(artifact).toHaveNoDiagnostics();
   });
 });
+
+describe('routed step Edges', () => {
+  // A Node in the line between a and b, and an Edge from it to d.
+  const routed: FlowState = {
+    nodes: [node('a', 0), node('b', 400), node('c', 200), node('d', 600, { position: { x: 600, y: 300 } })],
+    edges: [
+      { id: 'ab', source: { node: 'a', port: 'out' }, target: { node: 'b', port: 'in' }, shape: 'routed-step', data: null },
+      { id: 'cd', source: { node: 'c', port: 'out' }, target: { node: 'd', port: 'in' }, shape: 'routed-step', data: null },
+    ],
+  };
+  const corners = (d: string | null | undefined) =>
+    d!
+      .slice(2)
+      .split(' L ')
+      .map((pair) => pair.split(' ').map(Number) as [number, number]);
+  /** Whether a path runs through a Node's box. */
+  const crosses = (d: string | null | undefined, box: { x: number; y: number; width: number; height: number }) =>
+    corners(d)
+      .slice(1)
+      .some(([x2, y2], i) => {
+        const [x1, y1] = corners(d)[i]!;
+        return y1 === y2
+          ? y1 > box.y && y1 < box.y + box.height && Math.min(x1, x2) < box.x + box.width && Math.max(x1, x2) > box.x
+          : x1 > box.x && x1 < box.x + box.width && Math.min(y1, y2) < box.y + box.height && Math.max(y1, y2) > box.y;
+      });
+  const c = { x: 200, y: 0, width: 100, height: 50 };
+
+  test('go round the Nodes in their way', () => {
+    const { path } = editor(routed);
+    expect(path('ab')).not.toBe('M 100 25 L 400 25');
+    expect(crosses(path('ab'), c)).toBe(false);
+    expect(corners(path('ab'))[0]).toEqual([100, 25]);
+    expect(corners(path('ab')).at(-1)).toEqual([400, 25]);
+  });
+
+  test('are the step line when nothing is in the way', () => {
+    const { path } = editor({ ...routed, nodes: routed.nodes.filter((n) => n.id !== 'c'), edges: [routed.edges[0]!] });
+    expect(path('ab')).toBe('M 100 25 L 400 25');
+  });
+
+  test('don’t go round the Parents of their ends', () => {
+    const group = node('g', 0, { position: { x: -50, y: -100 }, size: { width: 600, height: 300 }, ports: [] });
+    const nested = (n: FlowNode) => ({ ...n, parent: 'g', position: { x: n.position.x + 50, y: n.position.y + 100 } });
+    const { path } = editor({ nodes: [group, nested(node('a', 0)), nested(node('b', 400))], edges: [routed.edges[0]!] });
+    expect(path('ab')).toBe('M 100 25 L 400 25');
+  });
+
+  test('reroute when a Node moves out of the way, and leave other Edges alone', async () => {
+    const { path, setState } = editor({
+      ...routed,
+      edges: [...routed.edges, { ...state.edges[0]!, id: 'ad', target: { node: 'd', port: 'in' } }],
+    });
+    const { artifact } = await captureArtifact(
+      () => applyChanges(setState, { changes: [{ type: 'move', node: 'c', from: { x: 200, y: 0 }, to: { x: 200, y: -300 } }] }),
+      { scenario: 'move-out-of-the-way' },
+    );
+    expect(path('ab')).toBe('M 100 25 L 400 25');
+    expect(artifact).toHaveNoDiagnostics();
+    expect(artifact).toStayWithinRerunBudget(1, { scope: 'edge:ab:geometry' });
+    expect(artifact).toStayWithinRerunBudget(1, { scope: 'nodeBoxes' });
+    // Not routed: it doesn't read the other Nodes.
+    expect(artifact).toStayWithinRerunBudget(0, { scope: 'edge:ad:geometry' });
+  });
+
+  test('while a Node is dragged, only its own Edges reroute; the others once the drag ends', async () => {
+    const { path, nodeElement } = editor({
+      ...routed,
+      nodes: routed.nodes.map((n) => (n.id === 'c' ? { ...n, position: { x: 200, y: 200 } } : n)),
+    });
+    expect(path('ab')).toBe('M 100 25 L 400 25');
+    const pointer = (type: string, target: Element, x: number, y: number) => {
+      target.dispatchEvent(
+        new PointerEvent(type, { bubbles: true, pointerId: 1, pointerType: 'mouse', button: 0, clientX: x, clientY: y }),
+      );
+      flush();
+    };
+    const cd = path('cd');
+    const { artifact } = await captureArtifact(
+      () => {
+        pointer('pointerdown', nodeElement('c'), 250, 225);
+        for (let y = 125; y > 0; y -= 10) pointer('pointermove', nodeElement('c'), 250, y);
+      },
+      { scenario: 'drag-frames' },
+    );
+    // c now sits across the line from a to b, which stays as it was until the drag ends.
+    expect(path('ab')).toBe('M 100 25 L 400 25');
+    expect(path('cd')).not.toBe(cd);
+    expect(artifact).toHaveNoDiagnostics();
+    expect(artifact).toStayWithinRerunBudget(0, { scope: 'edge:ab:geometry' });
+    expect(artifact).toStayWithinRerunBudget(13, { scope: 'edge:cd:geometry' });
+
+    const { artifact: drop } = await captureArtifact(() => pointer('pointerup', nodeElement('c'), 250, 5), { scenario: 'drop' });
+    expect(drop).toHaveNoDiagnostics();
+    expect(drop).toStayWithinRerunBudget(1, { scope: 'edge:ab:geometry' });
+    expect(crosses(path('ab'), { x: 200, y: -20, width: 100, height: 50 })).toBe(false);
+    expect(path('ab')).not.toBe('M 100 25 L 400 25');
+  });
+});

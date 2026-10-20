@@ -49,7 +49,8 @@ The data model, Changes and History are plain TypeScript and work without a DOM.
 - Clipboard: `ClipboardPayload`; the Flow's `transformCopy` and `transformPaste`.
 - Palette: `FlowDraggable`, `FlowDraggableProps`; the Flow's `onDrop`.
 - Built-in UI: `Background`, `BackgroundProps`, `BackgroundVariant`, `Controls`, `ControlsProps`, `MiniMap`, `MiniMapProps`, `PanelPosition`; `useFlow().locked()` and `setLocked`.
-- Edges: `Edge`, `useEdge`, `EdgePath`, `EdgeMarker`; shapes `bezierShape`, `straightShape`, `stepShape`, `smoothStepShape`, `edgeShapes`, `EdgeShape`, `EdgeGeometry`, `EdgeShapeContext`.
+- Edges: `Edge`, `useEdge`, `EdgePath`, `EdgeMarker`; shapes `bezierShape`, `straightShape`, `stepShape`, `smoothStepShape`, `routedStepShape`, `edgeShapes`, `EdgeShape`, `EdgeGeometry`, `EdgeShapeContext`.
+- Routing: `routeOrthogonal`, `RouteOptions`.
 - Records: `FlowState`, `FlowNode`, `FlowEdge`, `End`, `PortSpec`, `Side`, `PortKind`, `EdgeShapeName`, `Point`, `Size`, `Rect`; `indexFlow` for lookups by id.
 - Geometry: `absolutePosition`, `nodeBounds`, `portPoint`, `floatingPoint`, `edgeEnds`, `MeasuredSizes`, `MeasuredPorts`.
 - Edits: `Batch`, `Change` and its kinds, `invert`, `applyChanges`, `removal`.
@@ -61,6 +62,7 @@ The data model, Changes and History are plain TypeScript and work without a DOM.
 - [Nodes](node/node.md): `<Node>`, measuring, dragging, nesting, snapping, alignment guides, `<NodeResizer>`.
 - [Ports](port/port.md): `<Port>`, its side, kind and `max`, measured versus declared Ports.
 - [Edges](edge/edge.md): `<Edge>`, Edge shapes, custom Edges with `useEdge`, markers, labels.
+- [Routing](routing/routing.md): routed step Edges, `routeOrthogonal`, when Edges are rerouted during a drag.
 - [Connections](connection/connection.md): dragging from a Port to make an Edge, where it may end, reconnecting, dropping on empty space.
 - [Selection and the keyboard](selection/selection.md): clicking, the selection box, arrow keys, Delete and Escape.
 - [Accessibility](accessibility/accessibility.md): roles and names, focus in spatial order, connecting from the keyboard, the live region, `messages`.
