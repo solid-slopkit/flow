@@ -22,6 +22,11 @@
       "solid": "./dist/source/index.js",
       "default": "./dist/source/index.js"
     },
+    "./layout": {
+      "types": "./dist/types/layout/index.d.ts",
+      "solid": "./dist/source/layout/index.js",
+      "default": "./dist/source/layout/index.js"
+    },
     "./styles/flow.css": "./dist/source/styles/flow.css"
   },
   "publishConfig": {
@@ -43,6 +48,7 @@
     "@testing-library/jest-dom": "^7.0.0",
     "@types/node": "^24.0.0",
     "@vitest/browser-playwright": "^5.0.2",
+    "elkjs": "^0.12.0",
     "jsdom": "^30.1.2",
     "playwright": "^1.63.0",
     "typescript": "^7.0.2",
@@ -52,6 +58,12 @@
   "peerDependencies": {
     "@solid-slopkit/components": "^0.1.0",
     "@solidjs/web": ">=2.0.0-rc.11 <3",
+    "elkjs": ">=0.9 <1",
     "solid-js": ">=2.0.0-rc.11 <3"
+  },
+  "peerDependenciesMeta": {
+    "elkjs": {
+      "optional": true
+    }
   }
 }

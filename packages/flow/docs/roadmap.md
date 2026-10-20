@@ -96,8 +96,8 @@ Built from `@solid-slopkit/components` (ADR 0016).
 
 ## F11 — Layout
 
-- [ ] **F11.01** `@solid-slopkit/flow/layout` with `elkjs` as an optional peer (ADR 0020): Nodes, Ports with sides and Parents into ELK, a Batch of `move` Changes and Edge routes back; the main entry never imports it.
-- [ ] **F11.02** Running ELK in a Web Worker, and ELK's routes as the starting routes of routed step Edges until a Node moves.
+- [x] **F11.01** `@solid-slopkit/flow/layout` with `elkjs` as an optional peer (ADR 0020): Nodes, Ports with sides and Parents into ELK, a Batch of `move` Changes and Edge routes back; the main entry never imports it.
+- [x] **F11.02** Running ELK in a Web Worker, and ELK's routes as the starting routes of routed step Edges until a Node moves.
 
 ## F12 — Rendering only visible Nodes
 

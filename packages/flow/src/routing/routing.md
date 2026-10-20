@@ -16,7 +16,8 @@ const edge: FlowEdge = {
 
 ## Routed step Edges
 
-- While the plain step line (`step`) crosses no Node, a routed step Edge is that line. Otherwise it goes round the Nodes in its way, 20 Flow units from them where there is room, with as few bends as it can; when no route exists it falls back to the plain step line.
+- While the Edge's `route` (a Layout's, see [layout](../layout/layout.md)) still joins its ends and crosses no Node, it is drawn as is.
+- Otherwise, while the plain step line (`step`) crosses no Node, it is that line. Failing both, it goes round the Nodes in its way, 20 Flow units from them where there is room, with as few bends as it can; when no route exists it falls back to the plain step line.
 - It leaves each end toward its Port's side, as `step` does, and Floating ends work the same.
 - It goes round every Node with a Measured or Declared size, except the Parents of its two ends (a Node it is drawn inside). Its own two Nodes are obstacles too: a route never crosses them, though it may run along their outline. A Node with an end inside its box is ignored.
 - When it is redrawn: when its own ends move, and when any Node moves or is resized, except during a drag. While Nodes are dragged, only the Edges whose ends move (the Edges of the dragged Nodes and of their children) are rerouted on each frame; every other routed Edge keeps its route until the drag ends, then is rerouted once.

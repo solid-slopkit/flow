@@ -148,8 +148,8 @@ test('edgeShapes names every shape', () => {
 });
 
 describe('routedStepShape', () => {
-  const context = (obstacles: Rect[]): EdgeShapeContext => ({
-    edge: { id: 'e', source: { node: 'a' }, target: { node: 'b' }, data: null },
+  const context = (obstacles: Rect[], route?: Point[]): EdgeShapeContext => ({
+    edge: { id: 'e', source: { node: 'a' }, target: { node: 'b' }, route, data: null },
     nodeBounds: () => undefined,
     obstacles: () => obstacles,
   });
@@ -194,5 +194,37 @@ describe('routedStepShape', () => {
     expect(routedStepShape(end(0, 0, 'right'), end(200, 100, 'left'), boxed)).toEqual(
       stepShape(end(0, 0, 'right'), end(200, 100, 'left')),
     );
+  });
+
+  describe('with a route, such as a Layout’s', () => {
+    const source = end(0, 0, 'right');
+    const target = end(200, 100, 'left');
+    const route = [
+      { x: 0, y: 0 },
+      { x: 30, y: 0 },
+      { x: 30, y: 100 },
+      { x: 200, y: 100 },
+    ];
+
+    test('draws the route while it joins the ends and crosses no Node', () => {
+      expect(corners(routedStepShape(source, target, context([a, b], route)).d)).toEqual(route);
+    });
+
+    test('takes the ends as they are when the route is within half a unit of them', () => {
+      const off = [{ x: 0.4, y: 0 }, ...route.slice(1, -1), { x: 200, y: 100.3 }];
+      expect(corners(routedStepShape(source, target, context([a, b], off)).d)).toEqual(route);
+    });
+
+    test('routes afresh once an end has moved', () => {
+      const moved = end(200, 140, 'left');
+      expect(routedStepShape(source, moved, context([a, b], route))).toEqual(stepShape(source, moved));
+    });
+
+    test('routes afresh once a Node crosses it', () => {
+      const across = { x: 10, y: 40, width: 40, height: 20 };
+      const points = corners(routedStepShape(source, target, context([a, b, across], route)).d);
+      expect(points).not.toEqual(route);
+      expect(points.every((point) => point.x !== 30)).toBe(true);
+    });
   });
 });

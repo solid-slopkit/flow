@@ -34,7 +34,7 @@ const [flow, setFlow] = createStore<FlowState<Task, null>>({
 | ----------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `FlowState<N, E>`       | `nodes: FlowNode<N>[]`, `edges: FlowEdge<E>[]`                                                                |
 | `FlowNode<D>`           | `id`, `position: Point`, `parent?`, `size?: Size`, `selected?`, `draggable?`, `ports?: PortSpec[]`, `data: D` |
-| `FlowEdge<D>`           | `id`, `source: End`, `target: End`, `shape?: EdgeShapeName`, `selected?`, `data: D`                           |
+| `FlowEdge<D>`           | `id`, `source: End`, `target: End`, `shape?: EdgeShapeName`, `route?: Point[]`, `selected?`, `data: D`        |
 | `End`                   | `{ node: string; port?: string }`. Without `port` it is a Floating end.                                       |
 | `PortSpec`              | `id`, `side: Side`, `offset?`, `kind?: PortKind`, `max?`                                                      |
 | `Side`                  | `'top' \| 'right' \| 'bottom' \| 'left'`                                                                      |

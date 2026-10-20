@@ -288,3 +288,24 @@ export function routeOrthogonal(
     )
   );
 }
+
+/**
+ * A route kept from elsewhere, such as a Layout's, with its ends moved onto `source` and `target`, when it still fits:
+ * its ends are within half a unit of them, every run is horizontal or vertical, and it crosses none of the obstacles
+ * (one with an end inside it doesn't count). `undefined` when it doesn't.
+ */
+export function fitRoute(route: readonly Point[], source: Point, target: Point, obstacles: readonly Rect[]): Point[] | undefined {
+  const near = (a: Point, b: Point) => Math.abs(a.x - b.x) <= 0.5 && Math.abs(a.y - b.y) <= 0.5;
+  if (route.length < 2 || !near(route[0]!, source) || !near(route.at(-1)!, target)) return undefined;
+  const points = [
+    { x: source.x, y: source.y },
+    ...route.slice(1, -1).map((point) => ({ x: point.x, y: point.y })),
+    { x: target.x, y: target.y },
+  ];
+  const boxes = obstacles.map((rect) => inflate(rect, 0)).filter((box) => !inside(box, source) && !inside(box, target));
+  const fits = points.slice(1).every((point, i) => {
+    const from = points[i]!;
+    return (point.x === from.x || point.y === from.y) && !boxes.some((box) => crosses(box, from, point));
+  });
+  return fits ? corners(points) : undefined;
+}

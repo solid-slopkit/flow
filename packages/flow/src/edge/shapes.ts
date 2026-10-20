@@ -2,7 +2,7 @@
 // on the server.
 import type { EndPoint } from '../geometry/geometry';
 import type { EdgeShapeName, FlowEdge, Point, Rect, Side } from '../model/model';
-import { routeOrthogonal } from '../routing/route';
+import { fitRoute, routeOrthogonal } from '../routing/route';
 
 /** What an Edge shape returns: the SVG path data, and the point its label sits on, in Flow coordinates. */
 export type EdgeGeometry = { d: string; label: Point };
@@ -134,11 +134,16 @@ export const stepShape: EdgeShape = (source, target) => polyline(stepPoints(sour
 
 /**
  * A step line that goes round the context's obstacles, routed with `routeOrthogonal` (ADR 0021). It is the plain step
- * line while that crosses no Node, and falls back to it without a context or a route.
+ * line while that crosses no Node, and falls back to it without a context or a route. An Edge's `route` (a Layout's,
+ * ADR 0020) is drawn instead while it still joins the ends and crosses no Node.
  */
 export const routedStepShape: EdgeShape = (source, target, context) => {
   const step = stepPoints(source, target);
-  return polyline((context && routeOrthogonal(source, target, context.obstacles(), { margin: OFFSET, prefer: step })) ?? step);
+  if (!context) return polyline(step);
+  const obstacles = context.obstacles();
+  const kept = context.edge.route && fitRoute(context.edge.route, source, target, obstacles);
+  if (kept) return polyline(kept);
+  return polyline(routeOrthogonal(source, target, obstacles, { margin: OFFSET, prefer: step }) ?? step);
 };
 
 /** A step line with rounded corners. */

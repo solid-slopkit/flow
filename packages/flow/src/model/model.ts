@@ -54,6 +54,11 @@ export type FlowEdge<D = unknown> = {
   target: End;
   /** Defaults to `bezier`. */
   shape?: EdgeShapeName;
+  /**
+   * Corners in Flow coordinates, from end to end, such as a Layout's. A routed step Edge starts from it while it still
+   * joins the ends and crosses no Node.
+   */
+  route?: Point[];
   selected?: boolean;
   data: D;
 };

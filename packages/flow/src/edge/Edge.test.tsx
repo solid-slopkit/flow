@@ -1,10 +1,11 @@
 import { captureArtifact } from '../../test/capture';
-import { flush } from 'solid-js';
+import { flush, snapshot } from 'solid-js';
 import { describe, expect, test } from 'vitest';
 
 import { renderEditor } from '../../test/editor';
 import { render } from '../../test/render';
 import { applyChanges } from '../changes/apply';
+import { layout } from '../layout/layout';
 import type { FlowNode, FlowState } from '../model/model';
 import { Edge, EdgePath, useEdge } from './Edge';
 import { straightShape } from './shapes';
@@ -354,5 +355,30 @@ describe('routed step Edges', () => {
     expect(drop).toStayWithinRerunBudget(1, { scope: 'edge:ab:geometry' });
     expect(crosses(path('ab'), { x: 200, y: -20, width: 100, height: 50 })).toBe(false);
     expect(path('ab')).not.toBe('M 100 25 L 400 25');
+  });
+
+  test('start from a Layout’s routes, until an end moves', async () => {
+    const chain: FlowState = {
+      nodes: [node('a', 0), node('b', 300), node('c', 600)],
+      edges: [
+        routed.edges[0]!,
+        { ...routed.edges[0]!, id: 'bc', source: { node: 'b', port: 'out' }, target: { node: 'c', port: 'in' } },
+      ],
+    };
+    const { path, setState, state: live } = editor(chain);
+    const batch = await layout(snapshot(live) as FlowState);
+    applyChanges(setState, batch);
+    flush();
+    const route = (id: string) => live.edges.find((e) => e.id === id)!.route!;
+    const drawn = (points: { x: number; y: number }[]) => `M ${points.map((p) => `${p.x} ${p.y}`).join(' L ')}`;
+    expect(path('ab')).toBe(drawn(route('ab')));
+    expect(path('bc')).toBe(drawn(route('bc')));
+
+    const c = live.nodes.find((n) => n.id === 'c')!.position;
+    applyChanges(setState, { changes: [{ type: 'move', node: 'c', from: { ...c }, to: { x: c.x, y: c.y + 100 } }] });
+    flush();
+    // bc's end moved: routed afresh; ab is untouched and keeps its route.
+    expect(path('bc')).not.toBe(drawn(route('bc')));
+    expect(path('ab')).toBe(drawn(route('ab')));
   });
 });
