@@ -13,6 +13,10 @@ The installed packages ship agent skills that match their exact installed versio
 
 Each version is published to npm by the release workflow (ADR 0001). To cut a release, follow `.claude/skills/release/SKILL.md`: it applies the changesets, runs the checks, and asks before committing, tagging or pushing.
 
+## Updating Solid
+
+To move to a new Solid prerelease, follow `.claude/skills/solid-update/SKILL.md`: it reads the changelogs, checks the code against them, bumps the family and the peer floor, and verifies in tests and the docs site.
+
 ## Reactive diagnostics — capture evidence instead of guessing
 
 Use these whenever you are debugging reactivity (something doesn't update, updates too often, or is slow) or verifying a change didn't regress update granularity:
