@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@solid-slopkit/components": "^0.1.0",
-    "@solidjs/diagnostics": "^2.0.0-rc.13",
+    "@solidjs/diagnostics": "^2.0.0-rc.15",
     "@solidjs/testing-library": "^1.0.0-beta.3",
     "@solidjs/vite-plugin": "^3.0.0-next.46",
     "@testing-library/jest-dom": "^7.0.0",
@@ -57,9 +57,9 @@
   },
   "peerDependencies": {
     "@solid-slopkit/components": "^0.1.0",
-    "@solidjs/web": ">=2.0.0-rc.11 <3",
+    "@solidjs/web": ">=2.0.0-rc.15 <3",
     "elkjs": ">=0.9 <1",
-    "solid-js": ">=2.0.0-rc.11 <3"
+    "solid-js": ">=2.0.0-rc.15 <3"
   },
   "peerDependenciesMeta": {
     "elkjs": {

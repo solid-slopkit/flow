@@ -40,10 +40,10 @@ importers:
         specifier: ^1.0.0-next.2
         version: 1.0.0-next.2(@solidjs/web@2.0.0-rc.15)(solid-js@2.0.0-rc.15)
       '@solidjs/router':
-        specifier: ^2.0.0-next.30
+        specifier: ^2.0.0-next.40
         version: 2.0.0-next.40(@solidjs/web@2.0.0-rc.15)(filesystem-routing@0.4.0)(solid-js@2.0.0-rc.15)
       '@solidjs/web':
-        specifier: ^2.0.0-rc.13
+        specifier: ^2.0.0-rc.15
         version: 2.0.0-rc.15(solid-js@2.0.0-rc.15)
       elkjs:
         specifier: ^0.12.0
@@ -52,11 +52,11 @@ importers:
         specifier: ^4.5.0
         version: 4.5.0
       solid-js:
-        specifier: ^2.0.0-rc.13
+        specifier: ^2.0.0-rc.15
         version: 2.0.0-rc.15
     devDependencies:
       '@solidjs/diagnostics':
-        specifier: ^2.0.0-rc.13
+        specifier: ^2.0.0-rc.15
         version: 2.0.0-rc.15(@solidjs/web@2.0.0-rc.15)(solid-js@2.0.0-rc.15)(vitest@5.0.5)
       '@solidjs/testing-library':
         specifier: ^1.0.0-beta.3
@@ -86,17 +86,17 @@ importers:
   packages/flow:
     dependencies:
       '@solidjs/web':
-        specifier: '>=2.0.0-rc.11 <3'
+        specifier: '>=2.0.0-rc.15 <3'
         version: 2.0.0-rc.15(solid-js@2.0.0-rc.15)
       solid-js:
-        specifier: '>=2.0.0-rc.11 <3'
+        specifier: '>=2.0.0-rc.15 <3'
         version: 2.0.0-rc.15
     devDependencies:
       '@solid-slopkit/components':
         specifier: ^0.1.0
         version: 0.1.0(@solidjs/web@2.0.0-rc.15)(solid-js@2.0.0-rc.15)
       '@solidjs/diagnostics':
-        specifier: ^2.0.0-rc.13
+        specifier: ^2.0.0-rc.15
         version: 2.0.0-rc.15(@solidjs/web@2.0.0-rc.15)(solid-js@2.0.0-rc.15)(vitest@5.0.5)
       '@solidjs/testing-library':
         specifier: ^1.0.0-beta.3
