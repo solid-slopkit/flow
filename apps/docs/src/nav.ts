@@ -32,6 +32,7 @@ export const nav: NavSection[] = [
       { title: 'Layout', href: '/layout' },
       { title: 'Large Flows', href: '/large-flows' },
       { title: 'Server rendering', href: '/server-rendering' },
+      { title: '3D dataflow', href: '/dataflow-3d' },
     ],
   },
 ];

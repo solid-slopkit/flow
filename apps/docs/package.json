@@ -16,18 +16,21 @@
     "@lucide/solid": "^1.52.0",
     "@solid-slopkit/components": "^0.2.1",
     "@solid-slopkit/flow": "workspace:*",
+    "@solid-slopkit/threejs": "^0.1.1",
     "@solidjs/meta": "^1.0.0-next.2",
     "@solidjs/router": "^2.0.0-next.40",
     "@solidjs/web": "^2.0.0-rc.15",
     "elkjs": "^0.12.0",
     "shiki": "^4.5.0",
-    "solid-js": "^2.0.0-rc.15"
+    "solid-js": "^2.0.0-rc.15",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@solidjs/diagnostics": "^2.0.0-rc.15",
     "@solidjs/testing-library": "^1.0.0-beta.3",
     "@solidjs/vite-plugin": "^3.0.0-next.46",
     "@testing-library/jest-dom": "^7.0.0",
+    "@types/three": "^0.186.0",
     "filesystem-routing": "0.4.0",
     "jsdom": "^30.1.2",
     "typescript": "^7.0.2",

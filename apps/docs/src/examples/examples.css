@@ -38,3 +38,58 @@
 .example-announced .slp-flow-live:empty {
   display: none;
 }
+
+/* The 3D dataflow example: Nodes with a header to drag them by, a body of inputs, and a scene. */
+.example-dataflow-node {
+  padding: 0;
+  text-align: start;
+  box-shadow: 0 0.5rem 1.5rem color-mix(in srgb, var(--slp-color-base-content) 12%, transparent);
+}
+
+.example-dataflow-head {
+  padding: 0.375rem 0.75rem;
+  border-bottom: 1px solid var(--slp-color-base-300);
+  color: var(--slp-color-muted-content);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: grab;
+}
+
+.example-dataflow-body {
+  padding: 0.75rem;
+  min-width: 11rem;
+}
+
+.example-dataflow-scene {
+  position: relative;
+  width: 20rem;
+  height: 20rem;
+  border-radius: 0.375rem;
+  background: radial-gradient(circle at 50% 40%, #1c2340, #070912);
+  cursor: grab;
+}
+
+.example-dataflow-hint {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: #c1c7d6;
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+/* Values flowing along the Edges. */
+.example-dataflow-edge .slp-flow-edge-path {
+  stroke-dasharray: 6 4;
+  animation: example-dataflow-flow 0.8s linear infinite;
+}
+
+@keyframes example-dataflow-flow {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
